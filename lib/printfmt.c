@@ -95,12 +95,14 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 
     // Args added by me
     int positiveflag, addflag;
+    int length = 0;
 
 	while (1) {
 		while ((ch = *(unsigned char *) fmt++) != '%') {
 			if (ch == '\0')
 				return;
 			putch(ch, putdat);
+            length++;
 		}
 
 		// Process a %-escape sequence
@@ -271,8 +273,15 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 				  const char *overflow_error = "\nwarning! The value %n argument pointed to has been overflowed!\n";
 
 				  // Your code here
-
-				  break;
+                num = getint(&ap, lflag);
+				if (!ap)
+					printfmt(putch, putdat, null_error);
+				else if (num > 127)
+					printfmt(putch, putdat, overflow_error);
+				else
+                    *ap = *ap + length;
+					
+				break;
 			  }
 
 		// escaped '%' character
