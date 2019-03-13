@@ -34,37 +34,29 @@ static const char * const error_string[MAXERROR] =
  */
 static void
 printnum(void (*putch)(int, void*), void *putdat,
-	 unsigned long long num, unsigned base, int width, int padc, int reverse)
+	 unsigned long long num, unsigned base, int width, int padc)
 {
 	// if cprintf'parameter includes pattern of the form "%-", padding
 	// space on the right side if neccesary.
 	// you can add helper function if needed.
 	// your code here:
 
-	// first recursively print all preceding (more significant) digits
-	if (num >= base) {
-        if (reverse) {
-            putch("0123456789abcdef"[num % base], putdat);
-            printnum(putch, putdat, num / base, base, width - 1, padc, reverse);
-        } else {
-            printnum(putch, putdat, num / base, base, width - 1, padc, reverse);
-            putch("0123456789abcdef"[num % base], putdat);
-        }
-	} else {
-		// print any needed pad characters before first digit
-        if (reverse) {
-            printnum(putch, putdat, num / base, base, width - 1, padc, reverse);
-            while (--width > 0)
-                putch(padc, putdat);
-        } else {
-            while (--width > 0)
-                putch(padc, putdat);
-            printnum(putch, putdat, num / base, base, width - 1, padc, reverse);
-        }
-	}
+    if (padc == '-') {
+        // Reverse
+        padc = ' ';
+    }
 
-	// then print this (the least significant) digit
-	// putch("0123456789abcdef"[num % base], putdat);
+    // Original code
+//	if (num >= base) {
+//        printnum(putch, putdat, num / base, base, width - 1, padc);
+//	} else {
+//		// print any needed pad characters before first digit
+//        while (--width > 0)
+//            putch(padc, putdat);
+//	}
+//
+//	// then print this (the least significant) digit
+//	putch("0123456789abcdef"[num % base], putdat);
 }
 
 // Get an unsigned int of various possible sizes from a varargs list,
@@ -134,7 +126,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 
 		// flag to pad on the right
 		case '-':
-			// padc = '-';
+			padc = '-';
             reverse = 1;
 			goto reswitch;
 
@@ -264,7 +256,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 		number:
             if (positiveflag && addflag)
                 putch('+', putdat);
-			printnum(putch, putdat, num, base, width, padc, reverse);
+			printnum(putch, putdat, num, base, width, padc);
 			break;
 
 		case 'n': {
@@ -284,20 +276,22 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 				  //        is beyond the range of the integers the signed char type 
 				  //        can represent.
 
-				  const char *null_error = "\nerror! writing through NULL pointer! (%n argument)\n";
-				  const char *overflow_error = "\nwarning! The value %n argument pointed to has been overflowed!\n";
+				const char *null_error = "\nerror! writing through NULL pointer! (%n argument)\n";
+				const char *overflow_error = "\nwarning! The value %n argument pointed to has been overflowed!\n";
 
-				  // Your code here
-                num = getint(&ap, lflag);
-				if (!ap)
-					printfmt(putch, putdat, null_error);
-				else if (num > 127)
-					printfmt(putch, putdat, overflow_error);
-				else
-                    *ap = *ap + length;
-					
-				break;
-			  }
+				// Your code here
+                char *pos = va_arg(ap, char *);
+                if (!pos)
+                    printfmt(putch, putdat, "%s", null_error);
+                else if (*((unsigned int *)putdat) > 127) {
+                    printfmt(putch, putdat, "%s", overflow_error);
+                    *pos = -1;
+                }
+                else
+                    *pos = *(char *)putdat;
+                    
+ 				break;
+			}
 
 		// escaped '%' character
 		case '%':
