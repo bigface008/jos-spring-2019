@@ -88,6 +88,9 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 	int base, lflag, width, precision, altflag;
 	char padc;
 
+    // Args added by me
+    int positiveflag, addflag;
+
 	while (1) {
 		while ((ch = *(unsigned char *) fmt++) != '%') {
 			if (ch == '\0')
