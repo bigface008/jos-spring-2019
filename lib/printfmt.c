@@ -34,24 +34,37 @@ static const char * const error_string[MAXERROR] =
  */
 static void
 printnum(void (*putch)(int, void*), void *putdat,
-	 unsigned long long num, unsigned base, int width, int padc)
+	 unsigned long long num, unsigned base, int width, int padc, int reverse)
 {
 	// if cprintf'parameter includes pattern of the form "%-", padding
 	// space on the right side if neccesary.
 	// you can add helper function if needed.
 	// your code here:
-	
+
 	// first recursively print all preceding (more significant) digits
 	if (num >= base) {
-		printnum(putch, putdat, num / base, base, width - 1, padc);
+        if (reverse) {
+            putch("0123456789abcdef"[num % base], putdat);
+            printnum(putch, putdat, num / base, base, width - 1, padc, reverse);
+        } else {
+            printnum(putch, putdat, num / base, base, width - 1, padc, reverse);
+            putch("0123456789abcdef"[num % base], putdat);
+        }
 	} else {
 		// print any needed pad characters before first digit
-		while (--width > 0)
-			putch(padc, putdat);
+        if (reverse) {
+            printnum(putch, putdat, num / base, base, width - 1, padc, reverse);
+            while (--width > 0)
+                putch(padc, putdat);
+        } else {
+            while (--width > 0)
+                putch(padc, putdat);
+            printnum(putch, putdat, num / base, base, width - 1, padc, reverse);
+        }
 	}
 
 	// then print this (the least significant) digit
-	putch("0123456789abcdef"[num % base], putdat);
+	// putch("0123456789abcdef"[num % base], putdat);
 }
 
 // Get an unsigned int of various possible sizes from a varargs list,
@@ -96,6 +109,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
     // Args added by me
     int positiveflag, addflag;
     int length = 0;
+    int reverse = 0;
 
 	while (1) {
 		while ((ch = *(unsigned char *) fmt++) != '%') {
@@ -120,7 +134,8 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 
 		// flag to pad on the right
 		case '-':
-			padc = '-';
+			// padc = '-';
+            reverse = 1;
 			goto reswitch;
 
 		// flag to pad with 0's instead of spaces
@@ -249,7 +264,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 		number:
             if (positiveflag && addflag)
                 putch('+', putdat);
-			printnum(putch, putdat, num, base, width, padc);
+			printnum(putch, putdat, num, base, width, padc, reverse);
 			break;
 
 		case 'n': {
