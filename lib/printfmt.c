@@ -101,6 +101,10 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 		precision = -1;
 		lflag = 0;
 		altflag = 0;
+
+        // Args added by me
+        positiveflag = 1;
+        addflag = 0;
 	reswitch:
 		switch (ch = *(unsigned char *) fmt++) {
 
@@ -116,7 +120,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 
         // flag to add operator to the front
         case '+':
-            padc = '+';
+            addflag = 1;
             goto reswitch;
 
 		// width field
@@ -196,6 +200,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 		case 'd':
 			num = getint(&ap, lflag);
 			if ((long long) num < 0) {
+                positiveflag = 0;
 				putch('-', putdat);
 				num = -(long long) num;
 			}
@@ -232,6 +237,8 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 			num = getuint(&ap, lflag);
 			base = 16;
 		number:
+            if (positiveflag && addflag)
+                putch('+', putdat);
 			printnum(putch, putdat, num, base, width, padc);
 			break;
 
