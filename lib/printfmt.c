@@ -44,19 +44,36 @@ printnum(void (*putch)(int, void*), void *putdat,
     if (padc == '-') {
         // Reverse
         padc = ' ';
+
+        // Get reversed version of original number
+        unsigned long long reversenum = 0;
+        int numlen = 0;
+        for (; num >= base; numlen++, num /= base) {
+            reversenum *= base;
+            reversenum += num % base;
+        }
+
+        putch("0123456789abcdef"[num], putdat);
+        for (width -= numlen; numlen > 0; numlen--, reversenum /= base) {
+            putch("0123456789abcdef"[reversenum % num], putdat);
+        }
+
+        while (--width > 0)
+            putch(padc, putdat);
+        return;
     }
 
     // Original code
-//	if (num >= base) {
-//        printnum(putch, putdat, num / base, base, width - 1, padc);
-//	} else {
-//		// print any needed pad characters before first digit
-//        while (--width > 0)
-//            putch(padc, putdat);
-//	}
-//
-//	// then print this (the least significant) digit
-//	putch("0123456789abcdef"[num % base], putdat);
+	if (num >= base) {
+        printnum(putch, putdat, num / base, base, width - 1, padc);
+	} else {
+		// print any needed pad characters before first digit
+        while (--width > 0)
+            putch(padc, putdat);
+	}
+
+	// then print this (the least significant) digit
+	putch("0123456789abcdef"[num % base], putdat);
 }
 
 // Get an unsigned int of various possible sizes from a varargs list,
@@ -285,7 +302,6 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
                     printfmt(putch, putdat, "%s", null_error);
                 else if (*((unsigned int *)putdat) > 127) {
                     printfmt(putch, putdat, "%s", overflow_error);
-                    *pos = -1;
                 }
                 else
                     *pos = *(char *)putdat;
