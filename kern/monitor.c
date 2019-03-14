@@ -88,7 +88,7 @@ start_overflow(void)
     char *pret_addr;
 
 	// Your code here.
-    
+    do_overflow(); 
 
 
 }
@@ -103,7 +103,7 @@ int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
 	// Your code here.
-	// overflow_me();
+	overflow_me();
     cprintf("Stack backtrace\n");
     uint32_t *ebp = (uint32_t *) read_ebp();
     while (ebp) {
@@ -113,7 +113,7 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 
         struct Eipdebuginfo info;
         debuginfo_eip((uintptr_t) eip, &info);
-        cprintf("         %s:%u %.*s+%u\n",
+        cprintf("         %s:%d %.*s+%u\n",
                 info.eip_file,
                 info.eip_line,
                 info.eip_fn_namelen,

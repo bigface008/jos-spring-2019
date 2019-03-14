@@ -46,18 +46,24 @@ printnum(void (*putch)(int, void*), void *putdat,
         padc = ' ';
 
         // Get reversed version of original number
-        unsigned long long reversenum = 0;
-        int numlen = 0;
-        for (; num >= base; numlen++, num /= base) {
-            reversenum *= base;
-            reversenum += num % base;
+        unsigned long long num_reversed = 0;
+        int num_len = 0;
+        while (num >= base) {
+            num_reversed *= base;
+            num_reversed += num % base;
+            num_len++;
+            num /= base;
         }
 
-        putch("0123456789abcdef"[num], putdat);
-        for (width -= numlen; numlen > 0; numlen--, reversenum /= base) {
-            putch("0123456789abcdef"[reversenum % base], putdat);
+        putch("0123456789abcdef"[num], putdat); // Print the last number of num.
+        width -= num_len;                       // Calculate width for padc.
+        while (num_len > 0) {
+            putch("0123456789abcdef"[num_reversed % base], putdat);
+            num_len--;
+            num_reversed /= base;
         }
 
+        // Print padc
         while (--width > 0)
             putch(padc, putdat);
         return;
