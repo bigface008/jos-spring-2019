@@ -55,7 +55,7 @@ printnum(void (*putch)(int, void*), void *putdat,
 
         putch("0123456789abcdef"[num], putdat);
         for (width -= numlen; numlen > 0; numlen--, reversenum /= base) {
-            putch("0123456789abcdef"[reversenum % num], putdat);
+            putch("0123456789abcdef"[reversenum % base], putdat);
         }
 
         while (--width > 0)
@@ -117,15 +117,12 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 
     // Args added by me
     int positiveflag, addflag;
-    int length = 0;
-    int reverse = 0;
 
 	while (1) {
 		while ((ch = *(unsigned char *) fmt++) != '%') {
 			if (ch == '\0')
 				return;
 			putch(ch, putdat);
-            length++;
 		}
 
 		// Process a %-escape sequence
@@ -144,7 +141,6 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 		// flag to pad on the right
 		case '-':
 			padc = '-';
-            reverse = 1;
 			goto reswitch;
 
 		// flag to pad with 0's instead of spaces
@@ -254,6 +250,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 //			putch('X', putdat);
 //			putch('X', putdat);
             num = getuint(&ap, lflag);
+            putch('0', putdat);
             base = 8;
             goto number;
 
@@ -302,6 +299,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
                     printfmt(putch, putdat, "%s", null_error);
                 else if (*((unsigned int *)putdat) > 127) {
                     printfmt(putch, putdat, "%s", overflow_error);
+                    *pos = -1;
                 }
                 else
                     *pos = *(char *)putdat;
