@@ -24,6 +24,7 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
+    { "backtrace", "Display information of backtrace", mon_backtrace },
 };
 
 /***** Implementations of basic kernel monitor commands *****/
@@ -54,10 +55,73 @@ mon_kerninfo(int argc, char **argv, struct Trapframe *tf)
 	return 0;
 }
 
+// Lab1 only
+// read the pointer to the retaddr on the stack
+static uint32_t
+read_pretaddr() {
+    uint32_t pretaddr;
+    __asm __volatile("leal 4(%%ebp), %0" : "=r" (pretaddr)); 
+    return pretaddr;
+}
+
+void
+do_overflow(void)
+{
+    cprintf("Overflow success\n");
+}
+
+void
+start_overflow(void)
+{
+	// You should use a techique similar to buffer overflow
+	// to invoke the do_overflow function and
+	// the procedure must return normally.
+
+    // And you must use the "cprintf" function with %n specifier
+    // you augmented in the "Exercise 9" to do this job.
+
+    // hint: You can use the read_pretaddr function to retrieve 
+    //       the pointer to the function call return address;
+
+    char str[256] = {};
+    int nstr = 0;
+    char *pret_addr;
+
+	// Your code here.
+    do_overflow(); 
+
+
+}
+
+void
+overflow_me(void)
+{
+        start_overflow();
+}
+
 int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
 	// Your code here.
+	overflow_me();
+    cprintf("Stack backtrace\n");
+    uint32_t *ebp = (uint32_t *) read_ebp();
+    while (ebp) {
+        cprintf("  eip %08x  ebp %08x  args %08x %08x %08x %08x %08x\n",
+                ebp[1], (uint32_t)ebp, ebp[2], ebp[3], ebp[4], ebp[5], ebp[6]);
+
+        struct Eipdebuginfo info;
+        debuginfo_eip((uintptr_t) ebp[1], &info);
+        cprintf("         %s:%d %.*s+%u\n",
+                info.eip_file,
+                info.eip_line,
+                info.eip_fn_namelen,
+                info.eip_fn_name,
+                ebp[1] - (uint32_t)info.eip_fn_addr);
+        ebp = (uint32_t *)(*ebp);
+    }
+
+   	cprintf("Backtrace success\n");
 	return 0;
 }
 
