@@ -107,7 +107,7 @@ boot_alloc(uint32_t n)
 	// LAB 2: Your code here.
 	result = nextfree;
 	nextfree = ROUNDUP(nextfree + n, PGSIZE);
-	if (nextfree > KERNBASE+PTSIZE)
+	if (nextfree > (char *)(KERNBASE + PTSIZE))
 		panic("boot_alloc failed: Out of memory.");
 	return result;
 }
@@ -131,7 +131,7 @@ mem_init(void)
 	i386_detect_memory();
 
 	// Remove this line when you're ready to test this function.
-	panic("mem_init: This function is not finished\n");
+	// panic("mem_init: This function is not finished\n");
 
 	//////////////////////////////////////////////////////////////////////
 	// create initial page directory.
@@ -290,7 +290,16 @@ struct PageInfo *
 page_alloc(int alloc_flags)
 {
 	// Fill this function in
-	return 0;
+	if (!page_free_list)
+		return NULL;
+
+	if (alloc_flags && ALLOC_ZERO)
+		memset(page2kva(page_free_list), 0, PGSIZE);
+	
+	struct PageInfo *result = page_free_list;
+	page_free_list = page_free_list->pp_link;
+	result->pp_link = NULL; // ?
+	return result;
 }
 
 //
@@ -303,6 +312,11 @@ page_free(struct PageInfo *pp)
 	// Fill this function in
 	// Hint: You may want to panic if pp->pp_ref is nonzero or
 	// pp->pp_link is not NULL.
+	if (pp->pp_ref || pp->pp_link)
+		panic("page_free failed.");
+	
+	pp->pp_link = page_free_list;
+	page_free_list = pp;
 }
 
 //
