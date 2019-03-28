@@ -124,6 +124,7 @@ void mem_init(void)
 {
 	uint32_t cr0;
 	size_t n;
+	uint32_t cr4;
 
 	// Find out how much memory the machine has (npages & npages_basemem).
 	i386_detect_memory();
@@ -205,6 +206,11 @@ void mem_init(void)
 
 	// Check that the initial page directory has been set up correctly.
 	check_kern_pgdir();
+
+	// Turn on large page.
+	cr4 = rcr4();
+	cr4 |= CR4_PSE;
+	lcr4(cr4);
 
 	// Switch from the minimal entry page directory to the full kern_pgdir
 	// page table we just created.	Our instruction pointer should be
@@ -410,7 +416,12 @@ boot_map_region_large(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, in
 {
 	// Fill this function in
 	// No need to open large page.
-	boot_map_region(pgdir, va, size, pa, perm | PTE_PS);
+	// pde_t *pde = &(pgdir[PDX(va)]);
+	for(int i = 0; i < size; i += PTSIZE)
+	{
+		pde_t *pde = &(pgdir[PDX(va + i)]);
+		*pde = (pa + i) | perm | PTE_P | PTE_PS;
+	}
 }
 
 //
@@ -442,6 +453,7 @@ int page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
 	pte_t *pte = pgdir_walk(pgdir, va, 1);
+	// cprintf("%d\n", sizeof(struct PageInfo));
 	if (!pte)
 		return -E_NO_MEM;
 
