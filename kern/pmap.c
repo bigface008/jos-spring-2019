@@ -364,16 +364,18 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	// Fill this function in
 	pde_t *pde = &(pgdir[PDX(va)]);
 	pte_t *pte = NULL;
-	if (!(*pde & PTE_P) && create)
-	{
-		struct PageInfo *pp = (struct PageInfo *)page_alloc(ALLOC_ZERO);
-		if (pp == NULL)
-			return NULL;
-		pp->pp_ref++;
-		*pde = page2pa(pp) | PTE_P | PTE_W | PTE_U;
-	}
 	if (!(*pde & PTE_P))
-		return NULL;
+	{
+		if (!create)
+			return NULL;
+
+		struct PageInfo *page = (struct PageInfo *)page_alloc(ALLOC_ZERO);
+		if (!page)
+			return NULL;
+
+		page->pp_ref++;
+		*pde = page2pa(page) | PTE_P | PTE_W | PTE_U;
+	}
 	pte = KADDR(PTE_ADDR(*pde));
 	return &pte[PTX(va)];
 }
