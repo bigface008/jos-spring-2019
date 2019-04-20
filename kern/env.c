@@ -116,9 +116,10 @@ env_init(void)
 {
 	// Set up envs array
 	// LAB 3: Your code here.
-	for (int32_t i = 0; i < NENV; i++) {
-		envs[i].env_link = env_free_list;
-		env_free_list = &(envs[i]);
+	for (int i = 1; i <= NENV; i++) {
+		envs[NENV - i].env_id = 0;
+		envs[NENV - i].env_link = env_free_list;
+		env_free_list = &(envs[NENV - i]);
 	}
 
 	// Per-CPU part of the initialization
@@ -277,15 +278,15 @@ region_alloc(struct Env *e, void *va, size_t len)
 	//   'va' and 'len' values that are not page-aligned.
 	//   You should round va down, and round (va + len) up.
 	//   (Watch out for corner-cases!)
-	uintptr_t va_begin = (uintptr_t)ROUNDDOWN(va, PGSIZE);
-	uintptr_t va_end = (uintptr_t)ROUNDUP(va + len, PGSIZE);
-	for (uintptr_t i = va_begin; i < va_end; i += PGSIZE)
+	uintptr_t begin = (uintptr_t)ROUNDDOWN(va, PGSIZE);
+	uintptr_t end = (uintptr_t)ROUNDUP(va + len, PGSIZE);
+	for (uintptr_t i = begin; i < end; i += PGSIZE)
 	{
 		/* code */
 		struct PageInfo *page = page_alloc(0); // Fetch an existing page.
 		if (!page)
-			panic("kern/env.c: region_alloc failed.");
-		page_insert(kern_pgdir, page, (void *)i, PTE_U | PTE_W);
+			panic("kern/env.c region_alloc failed.");
+		page_insert(e->env_pgdir, page, (void *)i, PTE_U | PTE_W);
 	}
 }
 
@@ -353,7 +354,7 @@ load_icode(struct Env *e, uint8_t *binary)
 	eph = ph + elf->e_phnum;
 
 	lcr3(PADDR(e->env_pgdir));
-	for(; ph < eph; ph++)
+	for (; ph < eph; ph++)
 	{
 		if (ph->p_type != ELF_PROG_LOAD)
 			continue;
@@ -386,10 +387,12 @@ env_create(uint8_t *binary, enum EnvType type)
 {
 	// LAB 3: Your code here.
 	struct Env *e;
-	if (env_alloc(&e, 0) < 0)
-		panic("kern/env.c: env_create failed");
+	int ret = env_alloc(&e, 0);
+	if (ret < 0)
+		panic("kern/env.c env_create: %e", ret);
 	e->env_type = type;
 	load_icode(e, binary);
+	// panic("Step");
 }
 
 //
@@ -506,14 +509,15 @@ env_run(struct Env *e)
 	//	e->env_tf to sensible values.
 
 	// LAB 3: Your code here.
+	// printf("env_run\n");
 	if (curenv != e)
 	{
 		if (curenv && curenv->env_status == ENV_RUNNING)
 		{
-			curenv->env_status == ENV_RUNNABLE;
+			curenv->env_status = ENV_RUNNABLE;
 		}
 		curenv = e;
-		curenv->env_status == ENV_RUNNING;
+		curenv->env_status = ENV_RUNNING;
 		curenv->env_runs++;
 		lcr3(PADDR(curenv->env_pgdir));
 	}
