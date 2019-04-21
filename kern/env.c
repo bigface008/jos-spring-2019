@@ -278,9 +278,9 @@ region_alloc(struct Env *e, void *va, size_t len)
 	//   'va' and 'len' values that are not page-aligned.
 	//   You should round va down, and round (va + len) up.
 	//   (Watch out for corner-cases!)
-	uintptr_t begin = (uintptr_t)ROUNDDOWN(va, PGSIZE);
-	uintptr_t end = (uintptr_t)ROUNDUP(va + len, PGSIZE);
-	for (uintptr_t i = begin; i < end; i += PGSIZE)
+	uint32_t begin = ROUNDDOWN((uint32_t)va, PGSIZE);
+	uint32_t end = ROUNDUP((uint32_t)va + len, PGSIZE);
+	for (uint32_t i = begin; i < end; i += PGSIZE)
 	{
 		/* code */
 		struct PageInfo *page = page_alloc(0); // Fetch an existing page.
@@ -373,6 +373,7 @@ load_icode(struct Env *e, uint8_t *binary)
 	// at virtual address USTACKTOP - PGSIZE.
 	// LAB 3: Your code here.
 	region_alloc(e, (void *)(USTACKTOP - PGSIZE), PGSIZE);
+	e->env_heap_marker = ROUNDDOWN(USTACKTOP - PGSIZE, PGSIZE);
 }
 
 //

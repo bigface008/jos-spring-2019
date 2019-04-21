@@ -11,6 +11,9 @@
 #include <kern/syscall.h>
 #include <kern/console.h>
 
+// Added by 516030910460.
+#include <inc/types.h>
+
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
 // Destroys the environment on memory errors.
@@ -77,7 +80,20 @@ static int
 sys_sbrk(uint32_t inc)
 {
 	// LAB3: your code here.
-	return 0;
+	uint32_t begin = ROUNDDOWN(curenv->env_heap_marker - inc, PGSIZE);
+	uint32_t end = ROUNDUP(curenv->env_heap_marker, PGSIZE);
+	for (uint32_t i = begin; i < end; i += PGSIZE)
+	{
+		/* code */
+		struct PageInfo *page = page_alloc(0); // Fetch an existing page.
+		if (!page)
+			panic("kern/syscall.c sys_sbrk failed.");
+		page_insert(curenv->env_pgdir, page, (void *)i, PTE_U | PTE_W);
+	}
+	// region_alloc(curenv, (void *)(curenv->env_heap_marker - inc), inc);
+	curenv->env_heap_marker = ROUNDDOWN(curenv->env_heap_marker - inc, PGSIZE);
+	return curenv->env_heap_marker;
+	// return 0;
 }
 
 // Dispatches to the correct kernel function, passing the arguments.
