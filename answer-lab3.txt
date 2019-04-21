@@ -13,3 +13,18 @@ instruction to invoke the kernel's page fault handler (which is interrupt vector
 不需要。错误号是系统产生的，不能由应用自己产生（指dpl为0的），所以一旦应用int $14，就会
 被判定为general protection fault。如果允许的话就会按照正常的page fault的处理过程走一
 遍。
+
+
+3. The break point test case will either generate a break point exception or a
+general protection fault depending on how you initialized the break point entry
+in the IDT (i.e., your call to SETGATE from trap_init). Why? How do you need to
+set it up in order to get the breakpoint exception to work as specified above
+and what incorrect setup would cause it to trigger a general protection fault?
+因为SETGATE函数调用的时候，break point exception对应的dpl是3，所以用户程序可以调用产
+生break point exception。把dpl设置为0就可以产生general protection fault。
+
+4. What do you think is the point of these mechanisms, particularly in light of
+what the user/softint test program does?
+有的中断允许用户来触发可以让系统有更多实用功能（如调试）。有的中断则应当被禁止。以上的机
+制实现了这一点。
+

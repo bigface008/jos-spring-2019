@@ -201,25 +201,21 @@ trap_dispatch(struct Trapframe *tf)
 	// LAB 3: Your code here.
 	switch (tf->tf_trapno)
 	{
+	case T_DIVIDE:
+		break;
 	case T_DEBUG:
-		// cprintf("TRAP frame at 0xf T_DEBUG:debug exception\n");
 		monitor(tf);
 		return;
-	case T_DIVIDE:
-		// cprintf("trap T_DIVIDE:divide error\n");
-		break;
 	case T_BRKPT:
-		// cprintf("trap T_BRKPT:breakpoint\n");
 		monitor(tf);
 		return;
 	case T_GPFLT:
-		// cprintf("trap T_DIVIDE:general protection fault\n");
 		break;
 	case T_PGFLT:
 		page_fault_handler(tf);
 		break;
 	default:
-		cprintf("trap no=%d\n", tf->tf_trapno);
+		cprintf("trap num = %d\n", tf->tf_trapno);
 		break;
 	}
 
