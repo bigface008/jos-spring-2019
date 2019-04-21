@@ -78,6 +78,7 @@ void trap_init(void)
 	extern void ENTRY_ALIGN();
 	extern void ENTRY_MCHK();
 	extern void ENTRY_SIMDERR();
+	extern void ENTRY_SYSCALL();
 
 	SETGATE(idt[T_DIVIDE], 0, GD_KT, ENTRY_DIVIDE, 0);
 	SETGATE(idt[T_DEBUG], 0, GD_KT, ENTRY_DEBUG, 0);
@@ -97,6 +98,7 @@ void trap_init(void)
 	SETGATE(idt[T_ALIGN], 0, GD_KT, ENTRY_ALIGN, 0);
 	SETGATE(idt[T_MCHK], 0, GD_KT, ENTRY_MCHK, 0);
 	SETGATE(idt[T_SIMDERR], 0, GD_KT, ENTRY_SIMDERR, 0);
+	SETGATE(idt[T_SYSCALL], 0, GD_KT, ENTRY_SYSCALL, 3);
 
 	// Per-CPU setup
 	trap_init_percpu();
@@ -199,6 +201,7 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
+	cprintf("trap num = %d\n", tf->tf_trapno);
 	switch (tf->tf_trapno)
 	{
 	case T_DIVIDE:
@@ -214,6 +217,14 @@ trap_dispatch(struct Trapframe *tf)
 	case T_PGFLT:
 		page_fault_handler(tf);
 		break;
+	case T_SYSCALL:
+		tf->tf_regs.reg_eax = syscall(tf->tf_regs.reg_eax,
+				tf->tf_regs.reg_edx,
+				tf->tf_regs.reg_ecx,
+				tf->tf_regs.reg_ebx,
+				tf->tf_regs.reg_edi,
+				tf->tf_regs.reg_esi);
+		return;
 	default:
 		cprintf("trap num = %d\n", tf->tf_trapno);
 		break;
@@ -278,6 +289,8 @@ void page_fault_handler(struct Trapframe *tf)
 	fault_va = rcr2();
 
 	// Handle kernel-mode page faults.
+	if ((tf->tf_cs & 0x3) == 0)
+		panic("kernel page fault");
 
 	// LAB 3: Your code here.
 
