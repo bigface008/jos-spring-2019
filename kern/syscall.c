@@ -24,6 +24,7 @@ sys_cputs(const char *s, size_t len)
 	// Destroy the environment if not.
 
 	// LAB 3: Your code here.
+	user_mem_assert(curenv, (void *)s, len, PTE_U);
 
 	// Print the string supplied by the user.
 	cprintf("%.*s", len, s);
@@ -85,7 +86,7 @@ sys_sbrk(uint32_t inc)
 	for (uint32_t i = begin; i < end; i += PGSIZE)
 	{
 		/* code */
-		struct PageInfo *page = page_alloc(0); // Fetch an existing page.
+		struct PageInfo *page = page_alloc(0);
 		if (!page)
 			panic("kern/syscall.c sys_sbrk failed.");
 		page_insert(curenv->env_pgdir, page, (void *)i, PTE_U | PTE_W);
