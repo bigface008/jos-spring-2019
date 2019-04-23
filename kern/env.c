@@ -522,6 +522,7 @@ env_run(struct Env *e)
 		curenv->env_runs++;
 		lcr3(PADDR(curenv->env_pgdir));
 	}
+	cprintf("esp %x\n", read_esp());
 	env_pop_tf(&(e->env_tf));
 	// panic("env_run not yet implemented");
 }

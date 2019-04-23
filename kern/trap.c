@@ -60,25 +60,45 @@ void trap_init(void)
 	extern struct Segdesc gdt[];
 
 	// LAB 3: Your code here.
-	extern void ENTRY_DIVIDE();
-	extern void ENTRY_DEBUG();
-	extern void ENTRY_NMI();
-	extern void ENTRY_BRKPT();
-	extern void ENTRY_OFLOW();
-	extern void ENTRY_BOUND();
-	extern void ENTRY_ILLOP();
-	extern void ENTRY_DEVICE();
-	extern void ENTRY_DBLFLT();
-	extern void ENTRY_TSS();
-	extern void ENTRY_SEGNP();
-	extern void ENTRY_STACK();
-	extern void ENTRY_GPFLT();
-	extern void ENTRY_PGFLT();
-	extern void ENTRY_FPERR();
-	extern void ENTRY_ALIGN();
-	extern void ENTRY_MCHK();
-	extern void ENTRY_SIMDERR();
-	extern void ENTRY_SYSCALL();
+	// extern void ENTRY_DIVIDE();
+	// extern void ENTRY_DEBUG();
+	// extern void ENTRY_NMI();
+	// extern void ENTRY_BRKPT();
+	// extern void ENTRY_OFLOW();
+	// extern void ENTRY_BOUND();
+	// extern void ENTRY_ILLOP();
+	// extern void ENTRY_DEVICE();
+	// extern void ENTRY_DBLFLT();
+	// extern void ENTRY_TSS();
+	// extern void ENTRY_SEGNP();
+	// extern void ENTRY_STACK();
+	// extern void ENTRY_GPFLT();
+	// extern void ENTRY_PGFLT();
+	// extern void ENTRY_FPERR();
+	// extern void ENTRY_ALIGN();
+	// extern void ENTRY_MCHK();
+	// extern void ENTRY_SIMDERR();
+	// extern void ENTRY_SYSCALL();
+	
+	void ENTRY_DIVIDE();
+	void ENTRY_DEBUG();
+	void ENTRY_NMI();
+	void ENTRY_BRKPT();
+	void ENTRY_OFLOW();
+	void ENTRY_BOUND();
+	void ENTRY_ILLOP();
+	void ENTRY_DEVICE();
+	void ENTRY_DBLFLT();
+	void ENTRY_TSS();
+	void ENTRY_SEGNP();
+	void ENTRY_STACK();
+	void ENTRY_GPFLT();
+	void ENTRY_PGFLT();
+	void ENTRY_FPERR();
+	void ENTRY_ALIGN();
+	void ENTRY_MCHK();
+	void ENTRY_SIMDERR();
+	void ENTRY_SYSCALL();
 
 	SETGATE(idt[T_DIVIDE], 0, GD_KT, ENTRY_DIVIDE, 0);
 	SETGATE(idt[T_DEBUG], 0, GD_KT, ENTRY_DEBUG, 0);
@@ -255,6 +275,7 @@ void trap(struct Trapframe *tf)
 	assert(!(read_eflags() & FL_IF));
 
 	cprintf("Incoming TRAP frame at 0x%p\n", tf);
+	cprintf("envs %p\n", envs);
 
 	if ((tf->tf_cs & 3) == 3)
 	{
