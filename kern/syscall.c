@@ -81,18 +81,17 @@ static int
 sys_sbrk(uint32_t inc)
 {
 	// LAB3: your code here.
-	uint32_t begin = ROUNDDOWN(curenv->env_heap_marker - inc, PGSIZE);
-	uint32_t end = ROUNDUP(curenv->env_heap_marker, PGSIZE);
+	uint32_t begin = ROUNDDOWN(curenv->env_heap_marker, PGSIZE);
+	uint32_t end = ROUNDUP(curenv->env_heap_marker + inc, PGSIZE);
 	for (uint32_t i = begin; i < end; i += PGSIZE)
 	{
-		/* code */
 		struct PageInfo *page = page_alloc(0);
 		if (!page)
-			panic("kern/syscall.c sys_sbrk failed.");
+			return E_NO_MEM; // ?
 		page_insert(curenv->env_pgdir, page, (void *)i, PTE_U | PTE_W);
 	}
 	// region_alloc(curenv, (void *)(curenv->env_heap_marker - inc), inc);
-	curenv->env_heap_marker = ROUNDDOWN(curenv->env_heap_marker - inc, PGSIZE);
+	curenv->env_heap_marker = ROUNDDOWN(curenv->env_heap_marker + inc, PGSIZE);
 	return curenv->env_heap_marker;
 	// return 0;
 }

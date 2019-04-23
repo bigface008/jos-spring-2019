@@ -60,65 +60,45 @@ void trap_init(void)
 	extern struct Segdesc gdt[];
 
 	// LAB 3: Your code here.
-	// extern void ENTRY_DIVIDE();
-	// extern void ENTRY_DEBUG();
-	// extern void ENTRY_NMI();
-	// extern void ENTRY_BRKPT();
-	// extern void ENTRY_OFLOW();
-	// extern void ENTRY_BOUND();
-	// extern void ENTRY_ILLOP();
-	// extern void ENTRY_DEVICE();
-	// extern void ENTRY_DBLFLT();
-	// extern void ENTRY_TSS();
-	// extern void ENTRY_SEGNP();
-	// extern void ENTRY_STACK();
-	// extern void ENTRY_GPFLT();
-	// extern void ENTRY_PGFLT();
-	// extern void ENTRY_FPERR();
-	// extern void ENTRY_ALIGN();
-	// extern void ENTRY_MCHK();
-	// extern void ENTRY_SIMDERR();
-	// extern void ENTRY_SYSCALL();
-	
-	void ENTRY_DIVIDE();
-	void ENTRY_DEBUG();
-	void ENTRY_NMI();
-	void ENTRY_BRKPT();
-	void ENTRY_OFLOW();
-	void ENTRY_BOUND();
-	void ENTRY_ILLOP();
-	void ENTRY_DEVICE();
-	void ENTRY_DBLFLT();
-	void ENTRY_TSS();
-	void ENTRY_SEGNP();
-	void ENTRY_STACK();
-	void ENTRY_GPFLT();
-	void ENTRY_PGFLT();
-	void ENTRY_FPERR();
-	void ENTRY_ALIGN();
-	void ENTRY_MCHK();
-	void ENTRY_SIMDERR();
-	void ENTRY_SYSCALL();
+	void EP_DIVIDE();
+	void EP_DEBUG();
+	void EP_NMI();
+	void EP_BRKPT();
+	void EP_OFLOW();
+	void EP_BOUND();
+	void EP_ILLOP();
+	void EP_DEVICE();
+	void EP_DBLFLT();
+	void EP_TSS();
+	void EP_SEGNP();
+	void EP_STACK();
+	void EP_GPFLT();
+	void EP_PGFLT();
+	void EP_FPERR();
+	void EP_ALIGN();
+	void EP_MCHK();
+	void EP_SIMDERR();
+	void EP_SYSCALL();
 
-	SETGATE(idt[T_DIVIDE], 0, GD_KT, ENTRY_DIVIDE, 0);
-	SETGATE(idt[T_DEBUG], 0, GD_KT, ENTRY_DEBUG, 0);
-	SETGATE(idt[T_NMI], 0, GD_KT, ENTRY_NMI, 0);
-	SETGATE(idt[T_BRKPT], 0, GD_KT, ENTRY_BRKPT, 3);
-	SETGATE(idt[T_OFLOW], 0, GD_KT, ENTRY_OFLOW, 3);
-	SETGATE(idt[T_BOUND], 0, GD_KT, ENTRY_BOUND, 3);
-	SETGATE(idt[T_ILLOP], 0, GD_KT, ENTRY_ILLOP, 0);
-	SETGATE(idt[T_DEVICE], 0, GD_KT, ENTRY_DEVICE, 0);
-	SETGATE(idt[T_DBLFLT], 0, GD_KT, ENTRY_DBLFLT, 0);
-	SETGATE(idt[T_TSS], 0, GD_KT, ENTRY_TSS, 0);
-	SETGATE(idt[T_SEGNP], 0, GD_KT, ENTRY_SEGNP, 0);
-	SETGATE(idt[T_STACK], 0, GD_KT, ENTRY_STACK, 0);
-	SETGATE(idt[T_GPFLT], 0, GD_KT, ENTRY_GPFLT, 0);
-	SETGATE(idt[T_PGFLT], 0, GD_KT, ENTRY_PGFLT, 0);
-	SETGATE(idt[T_FPERR], 0, GD_KT, ENTRY_FPERR, 0);
-	SETGATE(idt[T_ALIGN], 0, GD_KT, ENTRY_ALIGN, 0);
-	SETGATE(idt[T_MCHK], 0, GD_KT, ENTRY_MCHK, 0);
-	SETGATE(idt[T_SIMDERR], 0, GD_KT, ENTRY_SIMDERR, 0);
-	SETGATE(idt[T_SYSCALL], 0, GD_KT, ENTRY_SYSCALL, 3);
+	SETGATE(idt[T_DIVIDE], 0, GD_KT, EP_DIVIDE, 0);
+	SETGATE(idt[T_DEBUG], 0, GD_KT, EP_DEBUG, 0);
+	SETGATE(idt[T_NMI], 0, GD_KT, EP_NMI, 0);
+	SETGATE(idt[T_BRKPT], 0, GD_KT, EP_BRKPT, 3);
+	SETGATE(idt[T_OFLOW], 0, GD_KT, EP_OFLOW, 3);
+	SETGATE(idt[T_BOUND], 0, GD_KT, EP_BOUND, 3);
+	SETGATE(idt[T_ILLOP], 0, GD_KT, EP_ILLOP, 0);
+	SETGATE(idt[T_DEVICE], 0, GD_KT, EP_DEVICE, 0);
+	SETGATE(idt[T_DBLFLT], 0, GD_KT, EP_DBLFLT, 0);
+	SETGATE(idt[T_TSS], 0, GD_KT, EP_TSS, 0);
+	SETGATE(idt[T_SEGNP], 0, GD_KT, EP_SEGNP, 0);
+	SETGATE(idt[T_STACK], 0, GD_KT, EP_STACK, 0);
+	SETGATE(idt[T_GPFLT], 0, GD_KT, EP_GPFLT, 0);
+	SETGATE(idt[T_PGFLT], 0, GD_KT, EP_PGFLT, 0);
+	SETGATE(idt[T_FPERR], 0, GD_KT, EP_FPERR, 0);
+	SETGATE(idt[T_ALIGN], 0, GD_KT, EP_ALIGN, 0);
+	SETGATE(idt[T_MCHK], 0, GD_KT, EP_MCHK, 0);
+	SETGATE(idt[T_SIMDERR], 0, GD_KT, EP_SIMDERR, 0);
+	SETGATE(idt[T_SYSCALL], 0, GD_KT, EP_SYSCALL, 3);
 
 	// Per-CPU setup
 	trap_init_percpu();
@@ -221,19 +201,13 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
-	cprintf("trap num = %d\n", tf->tf_trapno);
+	cprintf("trapno %d\n", tf->tf_trapno);
 	switch (tf->tf_trapno)
 	{
-	case T_DIVIDE:
-		break;
 	case T_DEBUG:
-		monitor(tf);
-		return;
 	case T_BRKPT:
 		monitor(tf);
 		return;
-	case T_GPFLT:
-		break;
 	case T_PGFLT:
 		page_fault_handler(tf);
 		break;
@@ -246,7 +220,6 @@ trap_dispatch(struct Trapframe *tf)
 				tf->tf_regs.reg_esi);
 		return;
 	default:
-		cprintf("trap num = %d\n", tf->tf_trapno);
 		break;
 	}
 
@@ -310,10 +283,11 @@ void page_fault_handler(struct Trapframe *tf)
 	fault_va = rcr2();
 
 	// Handle kernel-mode page faults.
-	if ((tf->tf_cs & 0x3) == 0)
-		panic("kernel page fault");
+	if ((tf->tf_cs & 3) == 0)
+		panic("kernel-mode page faults");
 
 	// LAB 3: Your code here.
+	// ???
 
 	// We've already handled kernel-mode exceptions, so if we get here,
 	// the page fault happened in user mode.
