@@ -12,6 +12,9 @@
 #include <kern/console.h>
 #include <kern/sched.h>
 
+// Added by 516030910460.
+#include <inc/types.h>
+
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
 // Destroys the environment on memory errors.
@@ -22,6 +25,7 @@ sys_cputs(const char *s, size_t len)
 	// Destroy the environment if not.
 
 	// LAB 3: Your code here.
+	user_mem_assert(curenv, (void *)s, len, PTE_U);
 
 	// Print the string supplied by the user.
 	cprintf("%.*s", len, s);
@@ -264,21 +268,33 @@ sys_ipc_recv(void *dstva)
 }
 
 static int
-sys_map_kernel_page(void* kpage, void* va)
+sys_map_kernel_page(void *kpage, void *va)
 {
-    int r;
-    struct PageInfo* p = pa2page(PADDR(kpage));
-    if (p == NULL)
-        return E_INVAL;
-    r = page_insert(curenv->env_pgdir, p, va, PTE_U | PTE_W);
-    return r;
+	int r;
+	struct PageInfo *p = pa2page(PADDR(kpage));
+	if (p == NULL)
+		return E_INVAL;
+	r = page_insert(curenv->env_pgdir, p, va, PTE_U | PTE_W);
+	return r;
 }
 
 static int
 sys_sbrk(uint32_t inc)
 {
-    // LAB3: your code here.
-    return 0;
+	// LAB3: your code here.
+	uint32_t begin = ROUNDDOWN(curenv->env_heap_marker, PGSIZE);
+	uint32_t end = ROUNDUP(curenv->env_heap_marker + inc, PGSIZE);
+	for (uint32_t i = begin; i < end; i += PGSIZE)
+	{
+		struct PageInfo *page = page_alloc(0);
+		if (!page)
+			return E_NO_MEM; // ?
+		page_insert(curenv->env_pgdir, page, (void *)i, PTE_U | PTE_W);
+	}
+	// region_alloc(curenv, (void *)(curenv->env_heap_marker - inc), inc);
+	curenv->env_heap_marker = ROUNDDOWN(curenv->env_heap_marker + inc, PGSIZE);
+	return curenv->env_heap_marker;
+	// return 0;
 }
 
 // Dispatches to the correct kernel function, passing the arguments.
@@ -289,11 +305,24 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// Return any appropriate return value.
 	// LAB 3: Your code here.
 
-	panic("syscall not implemented");
-
-	switch (syscallno) {
+	// panic("syscall not implemented");
+	cprintf("syscallno %d\n", syscallno);
+	switch (syscallno)
+	{
+	case SYS_cputs:
+		sys_cputs((char *)a1, (size_t)a2);
+		return 0;
+	case SYS_cgetc:
+		return sys_cgetc();
+	case SYS_env_destroy:
+		return sys_env_destroy((envid_t)a1);
+	case SYS_getenvid:
+		return sys_getenvid();
+	case SYS_map_kernel_page:
+		return sys_map_kernel_page((void *)a1, (void *)a2);
+	case SYS_sbrk:
+		return sys_sbrk((uint32_t)a1);
 	default:
 		return -E_INVAL;
 	}
 }
-

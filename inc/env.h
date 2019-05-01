@@ -65,6 +65,8 @@ struct Env {
 	uint32_t env_ipc_value;		// Data value sent to us
 	envid_t env_ipc_from;		// envid of the sender
 	int env_ipc_perm;		// Perm of page mapping received
+	// Marker of heap. Added by 516030910460.
+	uint32_t env_heap_marker;
 };
 
 #endif // !JOS_INC_ENV_H
