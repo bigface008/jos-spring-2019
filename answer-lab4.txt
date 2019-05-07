@@ -1,0 +1,16 @@
+操作系统 Lab4
+汪喆昊 516030910460
+
+Question 1
+Compare kern/mpentry.S side by side with boot/boot.S. Bearing in mind that
+kern/mpentry.S is compiled and linked to run above KERNBASE just like everything
+else in the kernel, what is the purpose of macro MPBOOTPHYS? Why is it necessary
+in kern/mpentry.S but not in boot/boot.S? In other words, what could go wrong if
+it were omitted in kern/mpentry.S?
+Hint: recall the differences between the link address and the load address that
+we have discussed in Lab 1.
+
+MPBOOTPHYS是用来计算s在boot过程中相对于MPENTRY_PADDR的地址的。mp_main是在物理地址
+0x7000的地方运行的，AP这个时候已经处于保护模式下，要给定虚拟地址才能访问相应的代码，所
+以需要用MPBOOTPHYS这个宏。
+

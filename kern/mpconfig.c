@@ -222,4 +222,6 @@ mp_init(void)
 		outb(0x22, 0x70);   // Select IMCR
 		outb(0x23, inb(0x23) | 1);  // Mask external interrupts.
 	}
+
+	// cprintf("mp_init end\n");
 }

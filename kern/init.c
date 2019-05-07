@@ -83,11 +83,15 @@ boot_aps(void)
 
 		// Tell mpentry.S what stack to use 
 		mpentry_kstack = percpu_kstacks[c - cpus] + KSTKSIZE;
+		// mpentry_kstack = (void *)(KSTACKTOP - (c - cpus) * (KSTKSIZE + KSTKGAP));
 		// Start the CPU at mpentry_start
+		// cprintf("step in boot_aps\n");
 		lapic_startap(c->cpu_id, PADDR(code));
+		// cprintf("step1 in boot_aps\n");
 		// Wait for the CPU to finish some basic setup in mp_main()
 		while(c->cpu_status != CPU_STARTED)
 			;
+		// cprintf("step2 in boot_aps\n");
 	}
 }
 
@@ -96,7 +100,19 @@ void
 mp_main(void)
 {
 	// We are in high EIP now, safe to switch to kern_pgdir 
+	// Something strange? Set cr4 manually. Exe4 fails without this part.
+	uint32_t cr4 = rcr4();
+	cr4 |= CR4_PSE;
+	lcr4(cr4);
+
+	// Original version.
 	lcr3(PADDR(kern_pgdir));
+
+	// Set cr0 manually.
+	uint32_t cr0 = rcr0();
+	cr0 |= CR0_PE | CR0_PG | CR0_AM | CR0_WP | CR0_NE | CR0_MP;
+	cr0 &= ~(CR0_TS | CR0_EM);
+	lcr0(cr0);
 	cprintf("SMP: CPU %d starting\n", cpunum());
 
 	lapic_init();
