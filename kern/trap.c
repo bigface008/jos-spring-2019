@@ -251,7 +251,7 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
-	cprintf("trapno %d\n", tf->tf_trapno);
+	// cprintf("trapno %d\n", tf->tf_trapno);
 	switch (tf->tf_trapno)
 	{
 	case T_DEBUG:
@@ -321,7 +321,7 @@ void trap(struct Trapframe *tf)
 	assert(!(read_eflags() & FL_IF));
 
 	cprintf("Incoming TRAP frame at 0x%p\n", tf);
-	cprintf("envs %p\n", envs);
+	// cprintf("envs %p\n", envs);
 
 	if ((tf->tf_cs & 3) == 3)
 	{
@@ -329,6 +329,7 @@ void trap(struct Trapframe *tf)
 		// Acquire the big kernel lock before doing any
 		// serious kernel work.
 		// LAB 4: Your code here.
+		lock_kernel();
 		assert(curenv);
 
 		// Garbage collect if current enviroment is a zombie
