@@ -182,7 +182,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	struct Env *e;
 	struct PageInfo *p;
 	int result;
-	if ((uint32_t)va >= UTOP || ROUNDDOWN(va, PGSIZE) != va ||
+	if ((uint32_t)va >= UTOP || PGOFF(va) ||
 		(perm & (PTE_U | PTE_P)) != (PTE_U | PTE_P) || (perm & (~PTE_SYSCALL)))
 		return -E_INVAL;
 
@@ -237,23 +237,28 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	struct PageInfo *pg;
 	pte_t *pte;
 	int result;
-	if ((uint32_t)srcva >= UTOP || ROUNDDOWN(srcva, PGSIZE) ||
-		(uint32_t)dstva >= UTOP || ROUNDDOWN(dstva, PGSIZE) ||
+	// cprintf("sys_page_map 1\n");
+	if ((uint32_t)srcva >= UTOP || PGOFF(srcva) ||
+		(uint32_t)dstva >= UTOP || PGOFF(dstva) ||
 		(perm & (PTE_U | PTE_P)) != (PTE_U | PTE_P) || (perm & (~PTE_SYSCALL)))
 		return -E_INVAL;
 
+	// cprintf("sys_page_map 2\n");
 	result = envid2env(srcenvid, &srcenv, 1);
 	if (result < 0)
 		return result;
 
+	// cprintf("sys_page_map 3\n");
 	result = envid2env(dstenvid, &dstenv, 1);
 	if (result < 0)
 		return result;
 
+	// cprintf("sys_page_map 4\n");
 	pg = page_lookup(srcenv->env_pgdir, srcva, &pte);
 	if (!pg)
 		return -E_INVAL;
 
+	// cprintf("sys_page_map 5\n");
 	if ((perm & PTE_W) && !(*pte & PTE_W))
 		return -E_INVAL;
 
@@ -279,7 +284,7 @@ sys_page_unmap(envid_t envid, void *va)
 	if (result < 0)
 		return result;
 
-	if ((uint32_t)va >= UTOP || ROUNDDOWN(va, PGSIZE) != va)
+	if ((uint32_t)va >= UTOP || PGOFF(va))
 		return -E_INVAL;
 
 	page_remove(e->env_pgdir, va);
@@ -417,7 +422,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	case SYS_page_alloc:
 		return sys_page_alloc((envid_t)a1, (void *)a2, (int)a3);
 	case SYS_page_map:
-		return sys_page_alloc((envid_t)a1, (void *)a2, (int)a3);
+		return sys_page_map((envid_t)a1, (void *)a2, (envid_t)a3, (void *)a4, (int)a5);
 	case SYS_page_unmap:
 		return sys_page_unmap((envid_t)a1, (void *)a2);
 	case SYS_sbrk:
