@@ -146,7 +146,7 @@ void trap_init_percpu(void)
 
 	// Initialize the TSS slot of the gdt.
 	gdt[(GD_TSS0 >> 3) + cpu_id] = SEG16(STS_T32A, (uint32_t)(&(thiscpu->cpu_ts)),
-							  sizeof(struct Taskstate) - 1, 0);
+										 sizeof(struct Taskstate) - 1, 0);
 	gdt[(GD_TSS0 >> 3) + cpu_id].sd_s = 0;
 
 	// Load the TSS selector (like other segment selectors, the
@@ -411,6 +411,29 @@ void page_fault_handler(struct Trapframe *tf)
 	//   (the 'tf' variable points at 'curenv->env_tf').
 
 	// LAB 4: Your code here.
+	if (curenv->env_pgfault_upcall)
+	{
+		struct UTrapframe *utf;
+		if (UXSTACKTOP - (uint32_t)(tf->tf_esp) > PGSIZE)
+			utf = (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe));
+		else
+			utf = (struct UTrapframe *)((uint32_t)(tf->tf_esp) -
+										sizeof(uint32_t) -
+										sizeof(struct UTrapframe));
+
+		user_mem_assert(curenv, (void *)utf, sizeof(struct UTrapframe), PTE_W);
+
+		utf->utf_fault_va = fault_va;
+		utf->utf_err = tf->tf_err;
+		utf->utf_regs = tf->tf_regs;
+		utf->utf_eip = tf->tf_eip;
+		utf->utf_eflags = tf->tf_eflags;
+		utf->utf_esp = tf->tf_esp;
+
+		curenv->env_tf.tf_esp = (uintptr_t)utf;
+		curenv->env_tf.tf_eip = (uintptr_t)curenv->env_pgfault_upcall;
+		env_run(curenv);
+	}
 
 	// Destroy the environment that caused the fault.
 	cprintf("[%08x] user fault va %08x ip %08x\n",
