@@ -320,7 +320,7 @@ void trap(struct Trapframe *tf)
 	// the interrupt path.
 	assert(!(read_eflags() & FL_IF));
 
-	cprintf("Incoming TRAP frame at 0x%p\n", tf);
+	// cprintf("Incoming TRAP frame at %p\n", tf);
 	// cprintf("envs %p\n", envs);
 
 	if ((tf->tf_cs & 3) == 3)
@@ -371,6 +371,8 @@ void page_fault_handler(struct Trapframe *tf)
 	// Read processor's CR2 register to find the faulting address
 	fault_va = rcr2();
 
+	// cprintf("page_fault_handler in kern/trap.c:%d\n", __LINE__);
+
 	// Handle kernel-mode page faults.
 	if ((tf->tf_cs & 3) == 0)
 		panic("kernel-mode page faults");
@@ -414,6 +416,7 @@ void page_fault_handler(struct Trapframe *tf)
 	if (curenv->env_pgfault_upcall)
 	{
 		struct UTrapframe *utf;
+		cprintf("step in pgfault\n");
 		if (UXSTACKTOP - (uint32_t)(tf->tf_esp) > PGSIZE)
 			utf = (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe));
 		else
@@ -421,6 +424,7 @@ void page_fault_handler(struct Trapframe *tf)
 										sizeof(uint32_t) -
 										sizeof(struct UTrapframe));
 
+		cprintf("utf %p\n", utf);
 		user_mem_assert(curenv, (void *)utf, sizeof(struct UTrapframe), PTE_W);
 
 		utf->utf_fault_va = fault_va;
