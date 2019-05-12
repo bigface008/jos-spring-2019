@@ -29,24 +29,19 @@ void sched_yield(void)
 
 	// LAB 4: Your code here.
 	uint32_t start;
-	if (!(thiscpu->cpu_env))
+	if (!curenv)
 		start = 0;
-	else if (thiscpu->cpu_env->env_status == ENV_RUNNING)
-	{
-		env_run(thiscpu->cpu_env);
-		return;
-	}
 	else
-		start = ENVX(thiscpu->cpu_env->env_id);
-
+		start = (ENVX(curenv->env_id) + 1) % NENV;
+ 
 	for (uint32_t i = 0; i < NENV; i++)
 	{
 		if (envs[(start + i) % NENV].env_status == ENV_RUNNABLE)
-		{
-			env_run(&(envs[start + i]));
-			return;
-		}
+			env_run(&(envs[(start + i) % NENV]));
 	}
+
+	if (curenv && curenv->env_status == ENV_RUNNING)
+		env_run(curenv);
 
 	// sched_halt never returns
 	sched_halt();
@@ -94,7 +89,7 @@ void sched_halt(void)
 		"pushl $0\n"
 		"pushl $0\n"
 		// Uncomment the following line after completing exercise 13
-		//"sti\n"
+		"sti\n"
 		"1:\n"
 		"hlt\n"
 		"jmp 1b\n"

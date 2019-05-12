@@ -70,26 +70,25 @@ pgfault(struct UTrapframe *utf)
 static int
 duppage(envid_t envid, unsigned pn)
 {
-	cprintf("duppage i\n");
+	cprintf("duppage i pn = %d\n", pn);
 	int r;
 
 	// LAB 4: Your code here.
-	envid_t current_envid = sys_getenvid();
 	void *addr = (void *)(pn * PGSIZE);
 	if (uvpt[pn] & (PTE_W | PTE_COW))
 	{
 		cprintf("step 1.1 in duppage\n");
-		if (sys_page_map(current_envid, addr, envid, addr, PTE_P | PTE_U | PTE_COW) < 0)
+		if (sys_page_map(0, addr, envid, addr, PTE_P | PTE_U | PTE_COW) < 0)
 			panic("duppage: page map 1 failed.");
 
 		cprintf("step 2 in duppage\n");
-		if (sys_page_map(current_envid, addr, current_envid, addr, PTE_P | PTE_U | PTE_COW) < 0)
+		if (sys_page_map(0, addr, 0, addr, PTE_P | PTE_U | PTE_COW) < 0)
 			panic("duppage: page map 2 failed.");
 	}
 	else
 	{
 		cprintf("step 1.2 in duppage\n");
-		if (sys_page_map(current_envid, addr, envid, addr, PTE_P | PTE_U) < 0)
+		if (sys_page_map(0, addr, envid, addr, PTE_P | PTE_U) < 0)
 			panic("duppage: non writeable pr cow.");
 	}
 
@@ -141,7 +140,10 @@ fork(void)
 		{
 			if ((uvpd[PDX(i)] & PTE_P) &&
 				(uvpt[PGNUM(i)] & (PTE_P | PTE_U)) == (PTE_P | PTE_U))
+			{
+				cprintf("loop %p in fork\n", i);
 				duppage(envid, PGNUM(i));
+			}
 			// cprintf("loop in fork\n");
 		}
 		cprintf("loop in fork end\n");

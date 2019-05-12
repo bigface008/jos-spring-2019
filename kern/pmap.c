@@ -543,9 +543,16 @@ int page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 
 	pp->pp_ref++;
 	if (*pte & PTE_P)
-		page_remove(pgdir, va);
+	{
+		cprintf("page insert pte %p pp %p\n", PTE_ADDR(*pte), page2pa(pp));
+		if (PTE_ADDR(*pte) != page2pa(pp))
+			page_remove(pgdir, va);
+		else
+			pp->pp_ref--;
+	}
 
 	*pte = page2pa(pp) | perm | PTE_P;
+	tlb_invalidate(pgdir, va);
 	return 0;
 }
 
@@ -908,7 +915,7 @@ check_kern_pgdir(void)
 	}
 
 	// // check kernel stack
-       // for (i = 0; i < KSTKSIZE; i += PGSIZE)
+	// for (i = 0; i < KSTKSIZE; i += PGSIZE)
 	// 	assert(check_va2pa(pgdir, KSTACKTOP - KSTKSIZE + i) == PADDR(bootstack) + i);
 	// assert(check_va2pa(pgdir, KSTACKTOP - PTSIZE) == ~0);
 	// check kernel stack
