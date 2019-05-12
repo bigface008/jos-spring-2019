@@ -395,7 +395,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// LAB 3: Your code here.
 
 	// panic("syscall not implemented");
-	cprintf("syscallno %d\n", syscallno);
+	// cprintf("syscallno %d\n", syscallno);
 	switch (syscallno)
 	{
 	case SYS_cgetc:
