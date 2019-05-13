@@ -544,7 +544,7 @@ int page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 	pp->pp_ref++;
 	if (*pte & PTE_P)
 	{
-		cprintf("page insert pte %p pp %p\n", PTE_ADDR(*pte), page2pa(pp));
+		// cprintf("page insert pte %p pp %p\n", PTE_ADDR(*pte), page2pa(pp));
 		if (PTE_ADDR(*pte) != page2pa(pp))
 			page_remove(pgdir, va);
 		else

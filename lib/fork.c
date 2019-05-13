@@ -70,30 +70,30 @@ pgfault(struct UTrapframe *utf)
 static int
 duppage(envid_t envid, unsigned pn)
 {
-	cprintf("duppage i pn = %d\n", pn);
+	// cprintf("duppage i pn = %d\n", pn);
 	int r;
 
 	// LAB 4: Your code here.
 	void *addr = (void *)(pn * PGSIZE);
 	if (uvpt[pn] & (PTE_W | PTE_COW))
 	{
-		cprintf("step 1.1 in duppage\n");
+		// cprintf("step 1.1 in duppage\n");
 		if (sys_page_map(0, addr, envid, addr, PTE_P | PTE_U | PTE_COW) < 0)
 			panic("duppage: page map 1 failed.");
 
-		cprintf("step 2 in duppage\n");
+		// cprintf("step 2 in duppage\n");
 		if (sys_page_map(0, addr, 0, addr, PTE_P | PTE_U | PTE_COW) < 0)
 			panic("duppage: page map 2 failed.");
 	}
 	else
 	{
-		cprintf("step 1.2 in duppage\n");
+		// cprintf("step 1.2 in duppage\n");
 		if (sys_page_map(0, addr, envid, addr, PTE_P | PTE_U) < 0)
 			panic("duppage: non writeable pr cow.");
 	}
 
 	// panic("duppage not implemented");
-	cprintf("duppage o\n");
+	// cprintf("duppage o\n");
 	return 0;
 }
 
@@ -117,51 +117,51 @@ envid_t
 fork(void)
 {
 	// LAB 4: Your code here.
-	cprintf("fork i\n");
+	// cprintf("fork i\n");
 	envid_t envid;
 
 	set_pgfault_handler(pgfault);
-	cprintf("step 1 in fork\n");
+	// cprintf("step 1 in fork\n");
 
 	envid = sys_exofork();
-	cprintf("step 2 in fork\n");
+	// cprintf("step 2 in fork\n");
 	if (envid < 0)
 		panic("fork: exofork failed.");
 	else if (envid == 0) // child
 	{
-		cprintf("step 3.child in fork\n");
+		// cprintf("step 3.child in fork\n");
 		thisenv = &(envs[ENVX(sys_getenvid())]);
 		return 0;
 	}
 	else // parent
 	{
-		cprintf("step 3.parent in fork\n");
+		// cprintf("step 3.parent in fork\n");
 		for (uint32_t i = UTEXT; i < USTACKTOP; i += PGSIZE)
 		{
 			if ((uvpd[PDX(i)] & PTE_P) &&
 				(uvpt[PGNUM(i)] & (PTE_P | PTE_U)) == (PTE_P | PTE_U))
 			{
-				cprintf("loop %p in fork\n", i);
+				// cprintf("loop %p in fork\n", i);
 				duppage(envid, PGNUM(i));
 			}
 			// cprintf("loop in fork\n");
 		}
-		cprintf("loop in fork end\n");
+		// cprintf("loop in fork end\n");
 	}
 
-	cprintf("step 4 in fork\n");
+	// cprintf("step 4 in fork\n");
 	if (sys_page_alloc(envid, (void *)(UXSTACKTOP - PGSIZE), PTE_P | PTE_U | PTE_W) < 0)
 		panic("fork: page alloc failed.");
 
-	cprintf("step 5 in fork\n");
+	// cprintf("step 5 in fork\n");
 	if (sys_env_set_pgfault_upcall(envid, _pgfault_upcall) < 0)
 		panic("fork: set pgfault upcall failed.");
 
-	cprintf("step 6 in fork\n");
+	// cprintf("step 6 in fork\n");
 	if (sys_env_set_status(envid, ENV_RUNNABLE) < 0)
 		panic("fork: set status failed.");
 
-	cprintf("fork o\n");
+	// cprintf("fork o\n");
 	return envid;
 	// panic("fork not implemented");
 }

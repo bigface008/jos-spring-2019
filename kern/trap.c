@@ -468,7 +468,7 @@ void page_fault_handler(struct Trapframe *tf)
 	}
 
 	struct UTrapframe *utf;
-	cprintf("step in pgfault\n");
+	// cprintf("step in pgfault\n");
 	if (USTACKTOP >= tf->tf_esp)
 		utf = (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe));
 	else if (UXSTACKTOP < tf->tf_esp)
@@ -480,7 +480,7 @@ void page_fault_handler(struct Trapframe *tf)
 									sizeof(struct UTrapframe));
 	}
 
-	cprintf("utf %p\n", utf);
+	// cprintf("utf %p\n", utf);
 	user_mem_assert(curenv, (void *)utf, sizeof(struct UTrapframe), PTE_W);
 	// user_mem_assert(curenv, curenv->env_pgfault_upcall, 1, PTE_W);
 	// user_mem_assert(curenv, (void *)(UXSTACKTOP - PGSIZE), PGSIZE, PTE_W);
