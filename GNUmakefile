@@ -141,6 +141,7 @@ include boot/Makefrag
 include kern/Makefrag
 include lib/Makefrag
 include user/Makefrag
+include fs/Makefrag
 
 
 CPUS ?= 1
@@ -149,6 +150,8 @@ QEMUOPTS = -drive file=$(OBJDIR)/kern/kernel.img,index=0,media=disk,format=raw -
 QEMUOPTS += $(shell if $(QEMU) -nographic -help | grep -q '^-D '; then echo '-D qemu.log'; fi)
 IMAGES = $(OBJDIR)/kern/kernel.img
 QEMUOPTS += -smp $(CPUS)
+QEMUOPTS += -drive file=$(OBJDIR)/fs/fs.img,index=1,media=disk,format=raw
+IMAGES += $(OBJDIR)/fs/fs.img
 QEMUOPTS += $(QEMUEXTRA)
 
 .gdbinit: .gdbinit.tmpl
@@ -211,9 +214,9 @@ grade:
 
 handin: tarball
 	@echo
-	@echo "Please upload your tar file to ftp(in os's lab4 webpage)"
+	@echo "Please upload your tar file to ftp(in os's lab5 webpage)"
 	@echo
-	@echo "For example, if your student id is 123456, then replace <student id>.tar.gz to 123456.tar.gz"
+	@echo "For example, if your student id is 123456, then rename lab5-handin.tar.gz to 123456.tar.gz"
 
 #handin-prep:
 #	@./handin-prep
