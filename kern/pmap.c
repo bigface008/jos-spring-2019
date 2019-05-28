@@ -934,23 +934,20 @@ check_kern_pgdir(void)
 	}
 
 	// check PDE permissions
-	for (i = 0; i < NPDENTRIES; i++)
-	{
-		switch (i)
-		{
+	for (i = 0; i < NPDENTRIES; i++) {
+		switch (i) {
 		case PDX(UVPT):
-		case PDX(KSTACKTOP - 1):
+		case PDX(KSTACKTOP-1):
 		case PDX(UPAGES):
 		case PDX(UENVS):
+		case PDX(MMIOBASE):
 			assert(pgdir[i] & PTE_P);
 			break;
 		default:
-			if (i >= PDX(KERNBASE))
-			{
+			if (i >= PDX(KERNBASE)) {
 				assert(pgdir[i] & PTE_P);
 				assert(pgdir[i] & PTE_W);
-			}
-			else
+			} else
 				assert(pgdir[i] == 0);
 			break;
 		}
