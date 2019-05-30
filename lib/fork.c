@@ -93,24 +93,29 @@ duppage(envid_t envid, unsigned pn)
 	// 		panic("duppage: non writeable pr cow.");
 	// }
 
-	if (((pte & PTE_W) || (pte & PTE_COW)) && !(pte & PTE_SHARE))
+	if (pte & PTE_SHARE)
+	{
+		if ((r = sys_page_map((envid_t)0, addr, envid, addr, pte & PTE_SYSCALL)) < 0)
+			panic("lib\\fork.c:%d sys_page_map1 failed with %e", __LINE__, r);
+		return 0;
+	}
+	else if (pte & (PTE_W | PTE_COW))
 	{
 		pte &= ~PTE_W;
 		pte |= PTE_COW;
 
-		if ((r = sys_page_map(thisenv->env_id, addr, envid, addr, pte & PTE_SYSCALL)) < 0)
+		if ((r = sys_page_map((envid_t)0, addr, envid, addr, pte & PTE_SYSCALL)) < 0)
 			panic("lib\\fork.c:%d sys_page_map2 failed with %e", __LINE__, r);
 
-		if ((r = sys_page_map(thisenv->env_id, addr, thisenv->env_id, addr, pte & PTE_SYSCALL)) < 0)
+		if ((r = sys_page_map((envid_t)0, addr, (envid_t)0, addr, pte & PTE_SYSCALL)) < 0)
 			panic("lib\\fork.c:%d sys_page_map3 failed with %e", __LINE__, r);
 	}
 	else
 	{
-		if ((r = sys_page_map(thisenv->env_id, addr, envid, addr, pte & PTE_SYSCALL)) < 0)
-			panic("lib\\fork.c:%d sys_page_map1 failed with %e", __LINE__, r);
-		return 0;
+		if ((r = sys_page_map((envid_t)0, addr, envid, addr, PTE_U | PTE_P)) < 0)
+			panic("lib\\fork.c:%d sys_page_map4 failed with %e", __LINE__, r);
 	}
-
+	
 	// panic("duppage not implemented");
 	// cprintf("duppage o\n");
 	return 0;

@@ -149,14 +149,14 @@ sys_env_set_trapframe(envid_t envid, struct Trapframe *tf)
 		return r;
 
 	env->env_tf = *tf;
-	env->env_tf.tf_cs |= 3;
-	env->env_tf.tf_eflags |= FL_IF;
-	// env->env_tf.tf_eflags &= ~FL_IOPL_MASK;
+	// env->env_tf.tf_cs |= 3;
 	// env->env_tf.tf_eflags |= FL_IF;
-	// env->env_tf.tf_ds = GD_UD | 3;
-	// env->env_tf.tf_es = GD_UD | 3;
-	// env->env_tf.tf_ss = GD_UD | 3;
-	// env->env_tf.tf_cs = GD_UT | 3;
+	env->env_tf.tf_eflags &= ~FL_IOPL_MASK;
+	env->env_tf.tf_eflags |= FL_IF;
+	env->env_tf.tf_ds = GD_UD | 3;
+	env->env_tf.tf_es = GD_UD | 3;
+	env->env_tf.tf_ss = GD_UD | 3;
+	env->env_tf.tf_cs = GD_UT | 3;
 	return 0;
 }
 
