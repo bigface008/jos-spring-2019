@@ -72,24 +72,43 @@ duppage(envid_t envid, unsigned pn)
 {
 	// cprintf("duppage i pn = %d\n", pn);
 	int r;
-
-	// LAB 4: Your code here.
+	pte_t pte = uvpt[pn];
 	void *addr = (void *)(pn * PGSIZE);
-	if (uvpt[pn] & (PTE_W | PTE_COW))
-	{
-		// cprintf("step 1.1 in duppage\n");
-		if (sys_page_map(0, addr, envid, addr, PTE_P | PTE_U | PTE_COW) < 0)
-			panic("duppage: page map 1 failed.");
 
-		// cprintf("step 2 in duppage\n");
-		if (sys_page_map(0, addr, 0, addr, PTE_P | PTE_U | PTE_COW) < 0)
-			panic("duppage: page map 2 failed.");
+	// // LAB 4: Your code here.
+	// if (uvpt[pn] & (PTE_W | PTE_COW))
+	// {
+	// 	// cprintf("step 1.1 in duppage\n");
+	// 	if (sys_page_map(0, addr, envid, addr, PTE_P | PTE_U | PTE_COW) < 0)
+	// 		panic("duppage: page map 1 failed.");
+
+	// 	// cprintf("step 2 in duppage\n");
+	// 	if (sys_page_map(0, addr, 0, addr, PTE_P | PTE_U | PTE_COW) < 0)
+	// 		panic("duppage: page map 2 failed.");
+	// }
+	// else
+	// {
+	// 	// cprintf("step 1.2 in duppage\n");
+	// 	if (sys_page_map(0, addr, envid, addr, PTE_P | PTE_U) < 0)
+	// 		panic("duppage: non writeable pr cow.");
+	// }
+
+	if (((pte & PTE_W) || (pte & PTE_COW)) && !(pte & PTE_SHARE))
+	{
+		pte &= ~PTE_W;
+		pte |= PTE_COW;
+
+		if ((r = sys_page_map(thisenv->env_id, addr, envid, addr, pte & PTE_SYSCALL)) < 0)
+			panic("lib\\fork.c:%d sys_page_map2 failed with %e", __LINE__, r);
+
+		if ((r = sys_page_map(thisenv->env_id, addr, thisenv->env_id, addr, pte & PTE_SYSCALL)) < 0)
+			panic("lib\\fork.c:%d sys_page_map3 failed with %e", __LINE__, r);
 	}
 	else
 	{
-		// cprintf("step 1.2 in duppage\n");
-		if (sys_page_map(0, addr, envid, addr, PTE_P | PTE_U) < 0)
-			panic("duppage: non writeable pr cow.");
+		if ((r = sys_page_map(thisenv->env_id, addr, envid, addr, pte & PTE_SYSCALL)) < 0)
+			panic("lib\\fork.c:%d sys_page_map1 failed with %e", __LINE__, r);
+		return 0;
 	}
 
 	// panic("duppage not implemented");
