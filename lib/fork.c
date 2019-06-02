@@ -75,24 +75,7 @@ duppage(envid_t envid, unsigned pn)
 	pte_t pte = uvpt[pn];
 	void *addr = (void *)(pn * PGSIZE);
 
-	// // LAB 4: Your code here.
-	// if (uvpt[pn] & (PTE_W | PTE_COW))
-	// {
-	// 	// cprintf("step 1.1 in duppage\n");
-	// 	if (sys_page_map(0, addr, envid, addr, PTE_P | PTE_U | PTE_COW) < 0)
-	// 		panic("duppage: page map 1 failed.");
-
-	// 	// cprintf("step 2 in duppage\n");
-	// 	if (sys_page_map(0, addr, 0, addr, PTE_P | PTE_U | PTE_COW) < 0)
-	// 		panic("duppage: page map 2 failed.");
-	// }
-	// else
-	// {
-	// 	// cprintf("step 1.2 in duppage\n");
-	// 	if (sys_page_map(0, addr, envid, addr, PTE_P | PTE_U) < 0)
-	// 		panic("duppage: non writeable pr cow.");
-	// }
-
+	// Changed in lab5.
 	if (pte & PTE_SHARE)
 	{
 		if ((r = sys_page_map((envid_t)0, addr, envid, addr, pte & PTE_SYSCALL)) < 0)
