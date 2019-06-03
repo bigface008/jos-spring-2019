@@ -5,7 +5,10 @@
 
 // PTE_COW marks copy-on-write page table entries.
 // It is one of the bits explicitly allocated to user processes (PTE_AVAIL).
-#define PTE_COW		0x800
+#define PTE_COW 0x800
+
+// Added in lab4.
+extern void _pgfault_upcall(void);
 
 //
 // Custom page fault handler - if faulting page is copy-on-write,
@@ -14,7 +17,7 @@
 static void
 pgfault(struct UTrapframe *utf)
 {
-	void *addr = (void *) utf->utf_fault_va;
+	void *addr = (void *)utf->utf_fault_va;
 	uint32_t err = utf->utf_err;
 	int r;
 
@@ -25,16 +28,32 @@ pgfault(struct UTrapframe *utf)
 	//   (see <inc/memlayout.h>).
 
 	// LAB 4: Your code here.
+	if ((err & FEC_WR) == 0)
+		panic("pgfault: not caused by writer.");
+
+	if ((uvpt[PGNUM(addr)] & PTE_COW) == 0)
+		panic("pgfault: not COW.");
 
 	// Allocate a new page, map it at a temporary location (PFTEMP),
 	// copy the data from the old page to the new page, then move the new
 	// page to the old page's address.
 	// Hint:
 	//   You should make three system calls.
-
 	// LAB 4: Your code here.
+	envid_t envid = sys_getenvid();
+	addr = ROUNDDOWN(addr, PGSIZE);
+	if (sys_page_alloc(envid, PFTEMP, PTE_P | PTE_U | PTE_W) < 0)
+		panic("pgfault: page alloc failed.");
 
-	panic("pgfault not implemented");
+	memmove(PFTEMP, addr, PGSIZE);
+
+	if (sys_page_map(envid, PFTEMP, envid, addr, PTE_P | PTE_U | PTE_W) < 0)
+		panic("pgfault: page map failed.");
+
+	if (sys_page_unmap(envid, PFTEMP) < 0)
+		panic("pgfault: page unmap failed.");
+
+	// panic("pgfault not implemented");
 }
 
 //
@@ -51,10 +70,37 @@ pgfault(struct UTrapframe *utf)
 static int
 duppage(envid_t envid, unsigned pn)
 {
+	// cprintf("duppage i pn = %d\n", pn);
 	int r;
+	pte_t pte = uvpt[pn];
+	void *addr = (void *)(pn * PGSIZE);
 
-	// LAB 4: Your code here.
-	panic("duppage not implemented");
+	// Changed in lab5.
+	if (pte & PTE_SHARE)
+	{
+		if ((r = sys_page_map((envid_t)0, addr, envid, addr, pte & PTE_SYSCALL)) < 0)
+			panic("lib\\fork.c:%d sys_page_map1 failed with %e", __LINE__, r);
+		return 0;
+	}
+	else if (pte & (PTE_W | PTE_COW))
+	{
+		pte &= ~PTE_W;
+		pte |= PTE_COW;
+
+		if ((r = sys_page_map((envid_t)0, addr, envid, addr, pte & PTE_SYSCALL)) < 0)
+			panic("lib\\fork.c:%d sys_page_map2 failed with %e", __LINE__, r);
+
+		if ((r = sys_page_map((envid_t)0, addr, (envid_t)0, addr, pte & PTE_SYSCALL)) < 0)
+			panic("lib\\fork.c:%d sys_page_map3 failed with %e", __LINE__, r);
+	}
+	else
+	{
+		if ((r = sys_page_map((envid_t)0, addr, envid, addr, PTE_U | PTE_P)) < 0)
+			panic("lib\\fork.c:%d sys_page_map4 failed with %e", __LINE__, r);
+	}
+	
+	// panic("duppage not implemented");
+	// cprintf("duppage o\n");
 	return 0;
 }
 
@@ -78,12 +124,57 @@ envid_t
 fork(void)
 {
 	// LAB 4: Your code here.
-	panic("fork not implemented");
+	// cprintf("fork i\n");
+	envid_t envid;
+
+	set_pgfault_handler(pgfault);
+	// cprintf("step 1 in fork\n");
+
+	envid = sys_exofork();
+	// cprintf("step 2 in fork\n");
+	if (envid < 0)
+		panic("fork: exofork failed.");
+	else if (envid == 0) // child
+	{
+		// cprintf("step 3.child in fork\n");
+		thisenv = &(envs[ENVX(sys_getenvid())]);
+		return 0;
+	}
+	else // parent
+	{
+		// cprintf("step 3.parent in fork\n");
+		for (uint32_t i = UTEXT; i < USTACKTOP; i += PGSIZE)
+		{
+			if ((uvpd[PDX(i)] & PTE_P) &&
+				(uvpt[PGNUM(i)] & (PTE_P | PTE_U)) == (PTE_P | PTE_U))
+			{
+				// cprintf("loop %p in fork\n", i);
+				duppage(envid, PGNUM(i));
+			}
+			// cprintf("loop in fork\n");
+		}
+		// cprintf("loop in fork end\n");
+	}
+
+	// cprintf("step 4 in fork\n");
+	if (sys_page_alloc(envid, (void *)(UXSTACKTOP - PGSIZE), PTE_P | PTE_U | PTE_W) < 0)
+		panic("fork: page alloc failed.");
+
+	// cprintf("step 5 in fork\n");
+	if (sys_env_set_pgfault_upcall(envid, _pgfault_upcall) < 0)
+		panic("fork: set pgfault upcall failed.");
+
+	// cprintf("step 6 in fork\n");
+	if (sys_env_set_status(envid, ENV_RUNNABLE) < 0)
+		panic("fork: set status failed.");
+
+	// cprintf("fork o\n");
+	return envid;
+	// panic("fork not implemented");
 }
 
 // Challenge!
-int
-sfork(void)
+int sfork(void)
 {
 	panic("sfork not implemented");
 	return -E_INVAL;

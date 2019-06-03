@@ -26,15 +26,13 @@ static struct Trapframe *last_tf;
 /* Interrupt descriptor table.  (Must be built at run time because
  * shifted function addresses can't be represented in relocation records.)
  */
-struct Gatedesc idt[256] = { { 0 } };
+struct Gatedesc idt[256] = {{0}};
 struct Pseudodesc idt_pd = {
-	sizeof(idt) - 1, (uint32_t) idt
-};
-
+	sizeof(idt) - 1, (uint32_t)idt};
 
 static const char *trapname(int trapno)
 {
-	static const char * const excnames[] = {
+	static const char *const excnames[] = {
 		"Divide error",
 		"Debug",
 		"Non-Maskable Interrupt",
@@ -54,8 +52,7 @@ static const char *trapname(int trapno)
 		"x87 FPU Floating-Point Error",
 		"Alignment Check",
 		"Machine-Check",
-		"SIMD Floating-Point Exception"
-	};
+		"SIMD Floating-Point Exception"};
 
 	if (trapno < ARRAY_SIZE(excnames))
 		return excnames[trapno];
@@ -66,21 +63,96 @@ static const char *trapname(int trapno)
 	return "(unknown trap)";
 }
 
-
-void
-trap_init(void)
+void trap_init(void)
 {
 	extern struct Segdesc gdt[];
 
 	// LAB 3: Your code here.
+	void EP_DIVIDE();
+	void EP_DEBUG();
+	void EP_NMI();
+	void EP_BRKPT();
+	void EP_OFLOW();
+	void EP_BOUND();
+	void EP_ILLOP();
+	void EP_DEVICE();
+	void EP_DBLFLT();
+	void EP_TSS();
+	void EP_SEGNP();
+	void EP_STACK();
+	void EP_GPFLT();
+	void EP_PGFLT();
+	void EP_FPERR();
+	void EP_ALIGN();
+	void EP_MCHK();
+	void EP_SIMDERR();
 
-	// Per-CPU setup 
+	// Added for lab4.
+	void EP_IRQ_TIMER();
+	void EP_IRQ_KBD();
+	void EP_IRQ_2();
+	void EP_IRQ_3();
+	void EP_IRQ_SERIAL();
+	void EP_IRQ_5();
+	void EP_IRQ_6();
+	void EP_IRQ_SPURIOUS();
+	void EP_IRQ_8();
+	void EP_IRQ_9();
+	void EP_IRQ_10();
+	void EP_IRQ_11();
+	void EP_IRQ_12();
+	void EP_IRQ_13();
+	void EP_IRQ_IDE();
+	void EP_IRQ_15();
+	void EP_IRQ_ERROR();
+
+	void EP_SYSCALL();
+
+	SETGATE(idt[T_DIVIDE], 0, GD_KT, EP_DIVIDE, 0);
+	SETGATE(idt[T_DEBUG], 0, GD_KT, EP_DEBUG, 0);
+	SETGATE(idt[T_NMI], 0, GD_KT, EP_NMI, 0);
+	SETGATE(idt[T_BRKPT], 0, GD_KT, EP_BRKPT, 3);
+	SETGATE(idt[T_OFLOW], 0, GD_KT, EP_OFLOW, 3);
+	SETGATE(idt[T_BOUND], 0, GD_KT, EP_BOUND, 3);
+	SETGATE(idt[T_ILLOP], 0, GD_KT, EP_ILLOP, 0);
+	SETGATE(idt[T_DEVICE], 0, GD_KT, EP_DEVICE, 0);
+	SETGATE(idt[T_DBLFLT], 0, GD_KT, EP_DBLFLT, 0);
+	SETGATE(idt[T_TSS], 0, GD_KT, EP_TSS, 0);
+	SETGATE(idt[T_SEGNP], 0, GD_KT, EP_SEGNP, 0);
+	SETGATE(idt[T_STACK], 0, GD_KT, EP_STACK, 0);
+	SETGATE(idt[T_GPFLT], 0, GD_KT, EP_GPFLT, 0);
+	SETGATE(idt[T_PGFLT], 0, GD_KT, EP_PGFLT, 0);
+	SETGATE(idt[T_FPERR], 0, GD_KT, EP_FPERR, 0);
+	SETGATE(idt[T_ALIGN], 0, GD_KT, EP_ALIGN, 0);
+	SETGATE(idt[T_MCHK], 0, GD_KT, EP_MCHK, 0);
+	SETGATE(idt[T_SIMDERR], 0, GD_KT, EP_SIMDERR, 0);
+
+	SETGATE(idt[IRQ_OFFSET + IRQ_TIMER], 0, GD_KT, EP_IRQ_TIMER, 0);
+	SETGATE(idt[IRQ_OFFSET + IRQ_KBD], 0, GD_KT, EP_IRQ_KBD, 0);
+	SETGATE(idt[IRQ_OFFSET + 2], 0, GD_KT, EP_IRQ_2, 0);
+	SETGATE(idt[IRQ_OFFSET + 3], 0, GD_KT, EP_IRQ_3, 0);
+	SETGATE(idt[IRQ_OFFSET + IRQ_SERIAL], 0, GD_KT, EP_IRQ_SERIAL, 0);
+	SETGATE(idt[IRQ_OFFSET + 5], 0, GD_KT, EP_IRQ_5, 0);
+	SETGATE(idt[IRQ_OFFSET + 6], 0, GD_KT, EP_IRQ_6, 0);
+	SETGATE(idt[IRQ_OFFSET + IRQ_SPURIOUS], 0, GD_KT, EP_IRQ_SPURIOUS, 0);
+	SETGATE(idt[IRQ_OFFSET + 8], 0, GD_KT, EP_IRQ_8, 0);
+	SETGATE(idt[IRQ_OFFSET + 9], 0, GD_KT, EP_IRQ_9, 0);
+	SETGATE(idt[IRQ_OFFSET + 10], 0, GD_KT, EP_IRQ_10, 0);
+	SETGATE(idt[IRQ_OFFSET + 11], 0, GD_KT, EP_IRQ_11, 0);
+	SETGATE(idt[IRQ_OFFSET + 12], 0, GD_KT, EP_IRQ_12, 0);
+	SETGATE(idt[IRQ_OFFSET + 13], 0, GD_KT, EP_IRQ_13, 0);
+	SETGATE(idt[IRQ_OFFSET + IRQ_IDE], 0, GD_KT, EP_IRQ_IDE, 0);
+	SETGATE(idt[IRQ_OFFSET + 15], 0, GD_KT, EP_IRQ_15, 0);
+	SETGATE(idt[IRQ_OFFSET + IRQ_ERROR], 0, GD_KT, EP_IRQ_ERROR, 0);
+
+	SETGATE(idt[T_SYSCALL], 0, GD_KT, EP_SYSCALL, 3);
+
+	// Per-CPU setup
 	trap_init_percpu();
 }
 
 // Initialize and load the per-CPU TSS and IDT
-void
-trap_init_percpu(void)
+void trap_init_percpu(void)
 {
 	// The example code here sets up the Task State Segment (TSS) and
 	// the TSS descriptor for CPU 0. But it is incorrect if we are
@@ -106,28 +178,45 @@ trap_init_percpu(void)
 	// user space on that CPU.
 	//
 	// LAB 4: Your code here:
-
-	// Setup a TSS so that we get the right stack
 	// when we trap to the kernel.
-	ts.ts_esp0 = KSTACKTOP;
-	ts.ts_ss0 = GD_KD;
-	ts.ts_iomb = sizeof(struct Taskstate);
+	uint8_t cpu_id = thiscpu->cpu_id;
+	thiscpu->cpu_ts.ts_esp0 = KSTACKTOP - cpu_id * (KSTKSIZE + KSTKGAP);
+	thiscpu->cpu_ts.ts_ss0 = GD_KD;
+	thiscpu->cpu_ts.ts_iomb = sizeof(struct Taskstate);
 
 	// Initialize the TSS slot of the gdt.
-	gdt[GD_TSS0 >> 3] = SEG16(STS_T32A, (uint32_t) (&ts),
-					sizeof(struct Taskstate) - 1, 0);
-	gdt[GD_TSS0 >> 3].sd_s = 0;
+	gdt[(GD_TSS0 >> 3) + cpu_id] = SEG16(STS_T32A, (uint32_t)(&(thiscpu->cpu_ts)),
+										 sizeof(struct Taskstate) - 1, 0);
+	gdt[(GD_TSS0 >> 3) + cpu_id].sd_s = 0;
 
 	// Load the TSS selector (like other segment selectors, the
 	// bottom three bits are special; we leave them 0)
-	ltr(GD_TSS0);
+	ltr(GD_TSS0 + (cpu_id << 3));
 
 	// Load the IDT
 	lidt(&idt_pd);
+
+	// Code for lab3.
+	// // Setup a TSS so that we get the right stack
+	// // when we trap to the kernel.
+	// ts.ts_esp0 = KSTACKTOP;
+	// ts.ts_ss0 = GD_KD;
+	// ts.ts_iomb = sizeof(struct Taskstate);
+
+	// // Initialize the TSS slot of the gdt.
+	// gdt[GD_TSS0 >> 3] = SEG16(STS_T32A, (uint32_t)(&ts),
+	// 						  sizeof(struct Taskstate) - 1, 0);
+	// gdt[GD_TSS0 >> 3].sd_s = 0;
+
+	// // Load the TSS selector (like other segment selectors, the
+	// // bottom three bits are special; we leave them 0)
+	// ltr(GD_TSS0);
+
+	// // Load the IDT
+	// lidt(&idt_pd);
 }
 
-void
-print_trapframe(struct Trapframe *tf)
+void print_trapframe(struct Trapframe *tf)
 {
 	cprintf("TRAP frame at %p from CPU %d\n", tf, cpunum());
 	print_regs(&tf->tf_regs);
@@ -145,22 +234,22 @@ print_trapframe(struct Trapframe *tf)
 	// PR=a protection violation caused the fault (NP=page not present).
 	if (tf->tf_trapno == T_PGFLT)
 		cprintf(" [%s, %s, %s]\n",
-			tf->tf_err & 4 ? "user" : "kernel",
-			tf->tf_err & 2 ? "write" : "read",
-			tf->tf_err & 1 ? "protection" : "not-present");
+				tf->tf_err & 4 ? "user" : "kernel",
+				tf->tf_err & 2 ? "write" : "read",
+				tf->tf_err & 1 ? "protection" : "not-present");
 	else
 		cprintf("\n");
 	cprintf("  eip  0x%08x\n", tf->tf_eip);
 	cprintf("  cs   0x----%04x\n", tf->tf_cs);
 	cprintf("  flag 0x%08x\n", tf->tf_eflags);
-	if ((tf->tf_cs & 3) != 0) {
+	if ((tf->tf_cs & 3) != 0)
+	{
 		cprintf("  esp  0x%08x\n", tf->tf_esp);
 		cprintf("  ss   0x----%04x\n", tf->tf_ss);
 	}
 }
 
-void
-print_regs(struct PushRegs *regs)
+void print_regs(struct PushRegs *regs)
 {
 	cprintf("  edi  0x%08x\n", regs->reg_edi);
 	cprintf("  esi  0x%08x\n", regs->reg_esi);
@@ -172,16 +261,63 @@ print_regs(struct PushRegs *regs)
 	cprintf("  eax  0x%08x\n", regs->reg_eax);
 }
 
+void easy_print_trapframe(struct Trapframe *tf)
+{
+	cprintf("TRAP frame at 0x%p\n", tf);
+	cprintf("  trap 0x%08x %s\n", tf->tf_trapno, trapname(tf->tf_trapno));
+	switch (tf->tf_trapno)
+	{
+	case T_DBLFLT:
+	case T_TSS:
+	case T_SEGNP:
+	case T_STACK:
+	case T_GPFLT:
+	case T_PGFLT:
+		cprintf("  err  0x%08x\n", tf->tf_err);
+		break;
+	default:
+		break;
+	}
+
+	cprintf("  eip  0x%08x\n", tf->tf_eip);
+	if ((tf->tf_cs & 3) != 0)
+	{
+		cprintf("  ss   0x----%04x\n", tf->tf_ss);
+	}
+}
+
 static void
 trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
+	// cprintf("trapno %d\n", tf->tf_trapno);
+	switch (tf->tf_trapno)
+	{
+	case T_DEBUG:
+	case T_BRKPT:
+		monitor(tf);
+		return;
+	case T_PGFLT:
+		page_fault_handler(tf);
+		break;
+	case T_SYSCALL:
+		tf->tf_regs.reg_eax = syscall(tf->tf_regs.reg_eax,
+									  tf->tf_regs.reg_edx,
+									  tf->tf_regs.reg_ecx,
+									  tf->tf_regs.reg_ebx,
+									  tf->tf_regs.reg_edi,
+									  tf->tf_regs.reg_esi);
+		return;
+	default:
+		break;
+	}
 
 	// Handle spurious interrupts
 	// The hardware sometimes raises these because of noise on the
 	// IRQ line or other reasons. We don't care.
-	if (tf->tf_trapno == IRQ_OFFSET + IRQ_SPURIOUS) {
+	if (tf->tf_trapno == IRQ_OFFSET + IRQ_SPURIOUS)
+	{
 		cprintf("Spurious interrupt on irq 7\n");
 		print_trapframe(tf);
 		return;
@@ -190,6 +326,13 @@ trap_dispatch(struct Trapframe *tf)
 	// Handle clock interrupts. Don't forget to acknowledge the
 	// interrupt using lapic_eoi() before calling the scheduler!
 	// LAB 4: Your code here.
+	if (tf->tf_trapno == IRQ_OFFSET + IRQ_TIMER)
+	{
+		lapic_eoi();
+		// cprintf("timer: yield\n");
+		sched_yield();
+		return;
+	}
 
 	// Add time tick increment to clock interrupts.
 	// Be careful! In multiprocessors, clock interrupts are
@@ -199,23 +342,35 @@ trap_dispatch(struct Trapframe *tf)
 
 	// Handle keyboard and serial interrupts.
 	// LAB 5: Your code here.
+	if (tf->tf_trapno == IRQ_OFFSET + IRQ_KBD)
+	{
+		kbd_intr();
+		return;
+	}
+	if (tf->tf_trapno == IRQ_OFFSET + IRQ_SERIAL)
+	{
+		serial_intr();
+		return;
+	}
 
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
+	// easy_print_trapframe(tf);
 	if (tf->tf_cs == GD_KT)
 		panic("unhandled trap in kernel");
-	else {
+	else
+	{
 		env_destroy(curenv);
 		return;
 	}
 }
 
-void
-trap(struct Trapframe *tf)
+void trap(struct Trapframe *tf)
 {
 	// The environment may have set DF and some versions
 	// of GCC rely on DF being clear
-	asm volatile("cld" ::: "cc");
+	asm volatile("cld" ::
+					 : "cc");
 
 	// Halt the CPU if some other CPU has called panic()
 	extern char *panicstr;
@@ -231,15 +386,23 @@ trap(struct Trapframe *tf)
 	// the interrupt path.
 	assert(!(read_eflags() & FL_IF));
 
-	if ((tf->tf_cs & 3) == 3) {
+	// cprintf("Incoming TRAP frame at %p\n", tf);
+	// cprintf("now print trap frame\n");
+	// print_trapframe(tf);
+	// cprintf("envs %p\n", envs);
+
+	if ((tf->tf_cs & 3) == 3)
+	{
 		// Trapped from user mode.
 		// Acquire the big kernel lock before doing any
 		// serious kernel work.
 		// LAB 4: Your code here.
+		lock_kernel();
 		assert(curenv);
 
 		// Garbage collect if current enviroment is a zombie
-		if (curenv->env_status == ENV_DYING) {
+		if (curenv->env_status == ENV_DYING)
+		{
 			env_free(curenv);
 			curenv = NULL;
 			sched_yield();
@@ -269,18 +432,21 @@ trap(struct Trapframe *tf)
 		sched_yield();
 }
 
-
-void
-page_fault_handler(struct Trapframe *tf)
+void page_fault_handler(struct Trapframe *tf)
 {
 	uint32_t fault_va;
 
 	// Read processor's CR2 register to find the faulting address
 	fault_va = rcr2();
 
+	// cprintf("page_fault_handler in kern/trap.c:%d\n", __LINE__);
+
 	// Handle kernel-mode page faults.
+	if ((tf->tf_cs & 3) == 0)
+		panic("kernel-mode page faults");
 
 	// LAB 3: Your code here.
+	// ???
 
 	// We've already handled kernel-mode exceptions, so if we get here,
 	// the page fault happened in user mode.
@@ -315,11 +481,45 @@ page_fault_handler(struct Trapframe *tf)
 	//   (the 'tf' variable points at 'curenv->env_tf').
 
 	// LAB 4: Your code here.
+	if (!curenv->env_pgfault_upcall)
+	{
+		cprintf("null curenv\n");
+		goto remainwork;
+	}
 
+	struct UTrapframe *utf;
+	// cprintf("step in pgfault\n");
+	if (USTACKTOP >= tf->tf_esp)
+		utf = (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe));
+	else if (UXSTACKTOP < tf->tf_esp)
+		goto remainwork;
+	else
+	{
+		utf = (struct UTrapframe *)(tf->tf_esp -
+									sizeof(uint32_t) -
+									sizeof(struct UTrapframe));
+	}
+
+	// cprintf("utf %p\n", utf);
+	user_mem_assert(curenv, (void *)utf, sizeof(struct UTrapframe), PTE_W);
+	// user_mem_assert(curenv, curenv->env_pgfault_upcall, 1, PTE_W);
+	// user_mem_assert(curenv, (void *)(UXSTACKTOP - PGSIZE), PGSIZE, PTE_W);
+
+	utf->utf_fault_va = fault_va;
+	utf->utf_err = tf->tf_err;
+	utf->utf_regs = tf->tf_regs;
+	utf->utf_eip = tf->tf_eip;
+	utf->utf_eflags = tf->tf_eflags;
+	utf->utf_esp = tf->tf_esp;
+
+	curenv->env_tf.tf_eip = (uintptr_t)curenv->env_pgfault_upcall;
+	curenv->env_tf.tf_esp = (uintptr_t)utf;
+	env_run(curenv);
+
+remainwork:
 	// Destroy the environment that caused the fault.
 	cprintf("[%08x] user fault va %08x ip %08x\n",
-		curenv->env_id, fault_va, tf->tf_eip);
+			curenv->env_id, fault_va, tf->tf_eip);
 	print_trapframe(tf);
 	env_destroy(curenv);
 }
-

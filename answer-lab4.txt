@@ -1,0 +1,49 @@
+操作系统 Lab4
+汪喆昊 516030910460
+
+Question 1
+Compare kern/mpentry.S side by side with boot/boot.S. Bearing in mind that
+kern/mpentry.S is compiled and linked to run above KERNBASE just like everything
+else in the kernel, what is the purpose of macro MPBOOTPHYS? Why is it necessary
+in kern/mpentry.S but not in boot/boot.S? In other words, what could go wrong if
+it were omitted in kern/mpentry.S?
+Hint: recall the differences between the link address and the load address that
+we have discussed in Lab 1.
+
+MPBOOTPHYS是用来计算s在boot过程中相对于MPENTRY_PADDR的地址的。mp_main是在物理地址
+0x7000的地方运行的，AP这个时候已经处于保护模式下，要给定虚拟地址才能访问相应的代码，所
+以需要用MPBOOTPHYS这个宏。
+
+Question 2
+It seems that using the big kernel lock guarantees that only one CPU can run the
+kernel code at a time. Why do we still need separate kernel stacks for each CPU?
+Describe a scenario in which using a shared kernel stack will go wrong, even
+with the protection of the big kernel lock.
+
+如果所有CPU共用一个kernel stack的话，一个CPU调用的栈可能会被另一个新CPU的栈覆盖掉，使
+得以后需要使用的数据丢失。
+
+Question 3
+
+In your implementation of env_run() you should have called lcr3(). Before and
+after the call to lcr3(), your code makes references (at least it should) to the
+variable e, the argument to env_run. Upon loading the %cr3 register, the
+addressing context used by the MMU is instantly changed. But a virtual address
+(namely e) has meaning relative to a given address context--the address context
+specifies the physical address to which the virtual address maps. Why can the
+pointer e be dereferenced both before and after the addressing switch?
+
+env_run调用时所有的参数都是envs中的一项，而envs是在kernel base以上的，lcr3切换页表并
+不会对kernel base以上的地址的引用产生影响。
+
+Question 4
+
+Whenever the kernel switches from one environment to another, it must ensure the
+old environment's registers are saved so they can be restored properly later.
+Why? Where does this happen?
+
+这样做可以以后再使用旧的environment。保存寄存器是在trapentry.S里面的pushal这一行做的。
+
+Question 5
+
+

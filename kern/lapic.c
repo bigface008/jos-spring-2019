@@ -55,6 +55,7 @@ lapicw(int index, int value)
 void
 lapic_init(void)
 {
+	// cprintf("lapic_init i\n");
 	if (!lapicaddr)
 		return;
 
@@ -62,9 +63,11 @@ lapic_init(void)
 	// region.  Map it in to virtual memory so we can access it.
 	lapic = mmio_map_region(lapicaddr, 4096);
 
+	// cprintf("lapic_init 1\n");
 	// Enable local APIC; set spurious interrupt vector.
 	lapicw(SVR, ENABLE | (IRQ_OFFSET + IRQ_SPURIOUS));
 
+	// cprintf("lapic_init 2\n");
 	// The timer repeatedly counts down at bus frequency
 	// from lapic[TICR] and then issues an interrupt.  
 	// If we cared more about precise timekeeping,
@@ -73,6 +76,7 @@ lapic_init(void)
 	lapicw(TIMER, PERIODIC | (IRQ_OFFSET + IRQ_TIMER));
 	lapicw(TICR, 10000000); 
 
+	// cprintf("lapic_init 3\n");
 	// Leave LINT0 of the BSP enabled so that it can get
 	// interrupts from the 8259A chip.
 	//
@@ -83,32 +87,40 @@ lapic_init(void)
 	if (thiscpu != bootcpu)
 		lapicw(LINT0, MASKED);
 
+	// cprintf("lapic_init 4\n");
 	// Disable NMI (LINT1) on all CPUs
 	lapicw(LINT1, MASKED);
 
+	// cprintf("lapic_init 5\n");
 	// Disable performance counter overflow interrupts
 	// on machines that provide that interrupt entry.
 	if (((lapic[VER]>>16) & 0xFF) >= 4)
 		lapicw(PCINT, MASKED);
 
+	// cprintf("lapic_init 6\n");
 	// Map error interrupt to IRQ_ERROR.
 	lapicw(ERROR, IRQ_OFFSET + IRQ_ERROR);
 
+	// cprintf("lapic_init 7\n");
 	// Clear error status register (requires back-to-back writes).
 	lapicw(ESR, 0);
 	lapicw(ESR, 0);
 
+	// cprintf("lapic_init 8\n");
 	// Ack any outstanding interrupts.
 	lapicw(EOI, 0);
 
+	// cprintf("lapic_init 9\n");
 	// Send an Init Level De-Assert to synchronize arbitration ID's.
 	lapicw(ICRHI, 0);
 	lapicw(ICRLO, BCAST | INIT | LEVEL);
 	while(lapic[ICRLO] & DELIVS)
 		;
 
+	// cprintf("lapic_init 10\n");
 	// Enable interrupts on the APIC (but not on the processor).
 	lapicw(TPR, 0);
+	// cprintf("lapic_init o\n");
 }
 
 int

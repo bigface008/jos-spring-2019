@@ -1,0 +1,8 @@
+操作系统 Lab5
+汪喆昊 516030910460
+
+Question 1
+Do you have to do anything else to ensure that this I/O privilege setting is
+saved and restored properly when you subsequently switch from one environment to
+another? Why?
+应该是不需要的。这些相关的信息都会保存到栈的相应位置。
