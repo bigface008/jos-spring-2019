@@ -468,7 +468,8 @@ static int
 sys_time_msec(void)
 {
 	// LAB 6: Your code here.
-	panic("sys_time_msec not implemented");
+	// panic("sys_time_msec not implemented");
+	return time_msec();
 }
 
 int
@@ -534,6 +535,8 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		return sys_page_unmap((envid_t)a1, (void *)a2);
 	case SYS_sbrk:
 		return sys_sbrk((uint32_t)a1);
+	case SYS_time_msec:
+		return sys_time_msec();
 	case SYS_yield:
 		sys_yield();
 		return 0;
