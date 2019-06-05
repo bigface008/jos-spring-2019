@@ -43,7 +43,10 @@ pci_e1000_attach(struct pci_func *pcif)
 {
 	// Enable PCI function
 	pci_func_enable(pcif);
+
 	// Map MMIO region and save the address in 'base;
+	e1000_base = mmio_map_region(pcif->reg_base[0], pcif->reg_size[0]);
+	cprintf("E1000 STATUS 0x%08x\n", ((struct E1000 *)e1000_base)->STATUS);
 
 	e1000_tx_init();
 	e1000_rx_init();
