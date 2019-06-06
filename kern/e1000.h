@@ -84,6 +84,6 @@ int e1000_tx(const void *buf, uint32_t len);
 int e1000_rx(void *buf, uint32_t len);
 
 // Added by student.
-volatile uint32_t *e1000_base;
+volatile struct E1000 *e1000_base;
 
 #endif  // SOL >= 6
