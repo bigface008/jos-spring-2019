@@ -84,6 +84,7 @@ int e1000_tx(const void *buf, uint32_t len);
 int e1000_rx(void *buf, uint32_t len);
 
 // Added by student.
-volatile struct E1000 *e1000_base;
+volatile struct E1000 *e1000_ptr;
+#define TX_PKT_SIZE 1518
 
 #endif  // SOL >= 6
