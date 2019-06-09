@@ -12,6 +12,7 @@ static struct jif_pkt *pkt = (struct jif_pkt*)REQVA;
 void
 umain(int argc, char **argv)
 {
+	// cprintf("> net/testoutput.c:%d umain\n", __LINE__);
 	envid_t ns_envid = sys_getenvid();
 	int i, r;
 
@@ -39,4 +40,5 @@ umain(int argc, char **argv)
 	// Spin for a while, just in case IPC's or packets need to be flushed
 	for (i = 0; i < TESTOUTPUT_COUNT*2; i++)
 		sys_yield();
+	// cprintf("< net/testoutput.c:%d umain\n", __LINE__);
 }

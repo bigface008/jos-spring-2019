@@ -80,6 +80,7 @@ low_level_init(struct netif *netif)
 static err_t
 low_level_output(struct netif *netif, struct pbuf *p)
 {
+    // cprintf("> net/lwip/jos/jif/jif.c:%d low_level_output\n", __LINE__);
     int r = sys_page_alloc(0, (void *)PKTMAP, PTE_U|PTE_W|PTE_P);
     if (r < 0)
 	panic("jif: could not allocate page of memory");
@@ -104,9 +105,12 @@ low_level_output(struct netif *netif, struct pbuf *p)
 
     pkt->jp_len = txsize;
 
+    // cprintf("   step1 in low_level_output\n");
     ipc_send(jif->envid, NSREQ_OUTPUT, (void *)pkt, PTE_P|PTE_W|PTE_U);
+    // cprintf("   step2 in low_level_output\n");
     sys_page_unmap(0, (void *)pkt);
 
+    // cprintf("< net/lwip/jos/jif/jif.c:%d low_level_output\n", __LINE__);
     return ERR_OK;
 }
 

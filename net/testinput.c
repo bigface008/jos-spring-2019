@@ -16,6 +16,7 @@ announce(void)
 	// listens for very specific ARP requests, such as requests
 	// for the gateway IP.
 
+	// cprintf("> net/testinput.c:%d announce\n", __LINE__);
 	uint8_t mac[6] = {0x52, 0x54, 0x00, 0x12, 0x34, 0x56};
 	uint32_t myip = inet_addr(IP);
 	uint32_t gwip = inet_addr(DEFAULT);
@@ -41,6 +42,7 @@ announce(void)
 
 	ipc_send(output_envid, NSREQ_OUTPUT, pkt, PTE_P|PTE_W|PTE_U);
 	sys_page_unmap(0, pkt);
+	// cprintf("< net/testinput.c:%d announce\n", __LINE__);
 }
 
 static void

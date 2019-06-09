@@ -365,35 +365,48 @@ sys_page_unmap(envid_t envid, void *va)
 static int
 sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 {
+	// cprintf("> kern/syscall.c:%d sys_ipc_try_send\n", __LINE__);
 	// LAB 4: Your code here.
 	int result;
 	struct Env *e;
 	struct PageInfo *pg;
 	pte_t *pte;
+	// cprintf("	sys_ipc_try_send: envid %x\n", envid);
 	result = envid2env(envid, &e, 0);
+	// cprintf("	step0 in sys_ipc_try_send\n");
+	// cprintf("	sys_ipc_try_send: result %d\n", result);
 	if (result < 0)
 		return result;
 
+	// cprintf("	step1 in sys_ipc_try_send\n");
+	// cprintf("	val in sys_ipc_try_send %d\n", -E_IPC_NOT_RECV);
 	if (!e->env_ipc_recving)
 		return -E_IPC_NOT_RECV;
 
+	// cprintf("	step2 in sys_ipc_try_send\n");
 	if ((uint32_t)srcva < UTOP)
 	{
+	// cprintf("	step3 in sys_ipc_try_send\n");
 		if (PGOFF(srcva))
 			return -E_INVAL;
 
+	// cprintf("	step4 in sys_ipc_try_send\n");
 		if ((perm & (PTE_P | PTE_U)) != (PTE_P | PTE_U))
 			return -E_INVAL;
 
+	// cprintf("	step5 in sys_ipc_try_send\n");
 		if (perm & (~PTE_SYSCALL))
 			return -E_INVAL;
 
+	// cprintf("	step6 in sys_ipc_try_send\n");
 		if (!(pg = page_lookup(curenv->env_pgdir, srcva, &pte)))
 			return -E_INVAL;
 
+	// cprintf("	step7 in sys_ipc_try_send\n");
 		if ((perm & PTE_W) && !(*pte & PTE_W))
 			return -E_INVAL;
 
+	// cprintf("	step8 in sys_ipc_try_send\n");
 		if (page_insert(e->env_pgdir, pg, e->env_ipc_dstva, perm) < 0)
 			return -E_NO_MEM;
 	}
@@ -403,6 +416,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 	e->env_ipc_value = value;
 	e->env_ipc_perm = perm;
 	e->env_status = ENV_RUNNABLE;
+	// cprintf("< kern/syscall.c:%d sys_ipc_try_send\n", __LINE__);
 	return 0;
 	// panic("sys_ipc_try_send not implemented");
 }

@@ -16,6 +16,7 @@ union Nsipc nsipcbuf __attribute__((aligned(PGSIZE)));
 static int
 nsipc(unsigned type)
 {
+	// cprintf("> lib/nsipc.c:%d nsipc\n", __LINE__);
 	static envid_t nsenv;
 	if (nsenv == 0)
 		nsenv = ipc_find_env(ENV_TYPE_NS);
@@ -26,6 +27,7 @@ nsipc(unsigned type)
 		cprintf("[%08x] nsipc %d\n", thisenv->env_id, type);
 
 	ipc_send(nsenv, type, &nsipcbuf, PTE_P|PTE_W|PTE_U);
+	// cprintf("< lib/nsipc.c:%d nsipc\n", __LINE__);
 	return ipc_recv(NULL, NULL, NULL);
 }
 

@@ -62,16 +62,21 @@ ipc_recv(envid_t *from_env_store, void *pg, int *perm_store)
 void ipc_send(envid_t to_env, uint32_t val, void *pg, int perm)
 {
 	// LAB 4: Your code here.
+	// cprintf("> lib/ipc.c:%d ipc_send, val = %d\n", __LINE__, val);
 	int result = 0;
 	if (!pg)
 		pg = (void *)UTOP;
 
+	// cprintf("	ipc_send to_env %x\n", to_env);
 	while ((result = sys_ipc_try_send(to_env, val, pg, perm)))
 	{
+		// cprintf("	val in ipc_send %d\n", -E_IPC_NOT_RECV);
+		// cprintf("	result in ipc_send %d\n", result);
 		if (result != -E_IPC_NOT_RECV)
 			panic("ipc try send failed.");
 		sys_yield();
 	}
+	// cprintf("< lib/ipc.c:%d ipc_send\n", __LINE__);
 	// panic("ipc_send not implemented");
 }
 

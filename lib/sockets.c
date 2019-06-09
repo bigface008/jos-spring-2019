@@ -112,7 +112,11 @@ devsock_read(struct Fd *fd, void *buf, size_t n)
 static ssize_t
 devsock_write(struct Fd *fd, const void *buf, size_t n)
 {
+	// cprintf("> lib/sockets.c:%d devsock_write\n", __LINE__);
+	// ssize_t re = nsipc_send(fd->fd_sock.sockid, buf, n, 0);
 	return nsipc_send(fd->fd_sock.sockid, buf, n, 0);
+	// cprintf("< lib/sockets.c:%d devsock_write\n", __LINE__);
+	// return re;
 }
 
 static int

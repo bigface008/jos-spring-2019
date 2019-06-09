@@ -313,6 +313,7 @@ fshandler handlers[] = {
 void
 serve(void)
 {
+	// cprintf("> fs/serv.c:%d server\n", __LINE__);
 	uint32_t req, whom;
 	int perm, r;
 	void *pg;
@@ -343,6 +344,7 @@ serve(void)
 		ipc_send(whom, r, pg, perm);
 		sys_page_unmap(0, fsreq);
 	}
+	// cprintf("< fs/serve.c:%d server\n", __LINE__);
 }
 
 void

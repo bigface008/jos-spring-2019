@@ -162,6 +162,7 @@ serve_init(uint32_t ipaddr, uint32_t netmask, uint32_t gw)
 
 static void
 process_timer(envid_t envid) {
+	// cprintf("> net/serv.c:%d process_timer\n", __LINE__);
 	uint32_t start, now, to;
 
 	if (envid != timer_envid) {
@@ -175,6 +176,7 @@ process_timer(envid_t envid) {
 
 	to = TIMER_INTERVAL - (now - start);
 	ipc_send(envid, to, 0, 0);
+	// cprintf("< net/serv.c:%d process_timer\n", __LINE__);
 }
 
 struct st_args {
@@ -185,6 +187,7 @@ struct st_args {
 
 static void
 serve_thread(uint32_t a) {
+	cprintf("> net/serv.c:%d serve_thread\n", __LINE__);
 	struct st_args *args = (struct st_args *)a;
 	union Nsipc *req = args->req;
 	int r;
@@ -252,6 +255,7 @@ serve_thread(uint32_t a) {
 	put_buffer(args->req);
 	sys_page_unmap(0, (void*) args->req);
 	free(args);
+	cprintf("< net/serv.c:%d serve_thread\n", __LINE__);
 }
 
 void

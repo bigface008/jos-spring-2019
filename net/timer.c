@@ -2,6 +2,7 @@
 
 void
 timer(envid_t ns_envid, uint32_t initial_to) {
+	// cprintf("> net/timer.c:%d timer\n", __LINE__);
 	int r;
 	uint32_t stop = sys_time_msec() + initial_to;
 
@@ -29,4 +30,5 @@ timer(envid_t ns_envid, uint32_t initial_to) {
 			break;
 		}
 	}
+	// cprintf("< net/timer.c:%d timer\n", __LINE__);
 }
