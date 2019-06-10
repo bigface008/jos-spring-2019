@@ -491,9 +491,12 @@ sys_net_send(const void *buf, uint32_t len)
 {
 	// LAB 6: Your code here.
 	// Check the user permission to [buf, buf + len]
+	user_mem_assert(curenv, buf, len, PTE_U);
+
 	// Call e1000_tx to send the packet
+	return e1000_tx(buf, len);
 	// Hint: e1000_tx only accept kernel virtual address
-	return -1;
+	// return -1;
 }
 
 int
@@ -541,6 +544,10 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		return sys_ipc_try_send((envid_t)a1, (uint32_t)a2, (void *)a3, (unsigned int)a4);
 	case SYS_map_kernel_page:
 		return sys_map_kernel_page((void *)a1, (void *)a2);
+	case SYS_net_recv:
+		return sys_net_recv((void *)a1, (uint32_t)a2);
+	case SYS_net_send:
+		return sys_net_send((void *)a1, (uint32_t)a2);
 	case SYS_page_alloc:
 		return sys_page_alloc((envid_t)a1, (void *)a2, (int)a3);
 	case SYS_page_map:

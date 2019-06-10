@@ -80,7 +80,22 @@ e1000_tx(const void *buf, uint32_t len)
 {
 	// Send 'len' bytes in 'buf' to ethernet
 	// Hint: buf is a kernel virtual address
+	if (!buf || len > TX_PKT_SIZE)
+		return -E_INVAL;
 
+	uint32_t tdt = e1000_ptr->TDT;
+	if (!(tx_descs[tdt].status & E1000_TX_STATUS_DD))
+		return -E_TXQ_FULL;
+
+	memset(tx_pkt_buf[tdt], 0, TX_PKT_SIZE);
+	memmove(tx_pkt_buf[tdt], buf, len);
+
+	tx_descs[tdt].length = len;
+	tx_descs[tdt].status &= ~E1000_TX_STATUS_DD;
+	tx_descs[tdt].cmd |= E1000_TX_CMD_EOP;
+	tx_descs[tdt].cmd |= E1000_TX_CMD_RS;
+
+	e1000_ptr->TDT = (tdt + 1) % N_TXDESC;
 	return 0;
 }
 

@@ -136,7 +136,7 @@ check_bc(void)
 
 	// Skip the !va_is_dirty() check because it makes the bug somewhat
 	// obscure and hence harder to debug.
-	//assert(!va_is_dirty(diskaddr(1)));
+	assert(!va_is_dirty(diskaddr(1)));
 
 	// clear it out
 	sys_page_unmap(0, diskaddr(1));

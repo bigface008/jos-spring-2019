@@ -28,6 +28,9 @@ enum {
 
 	E_AGAIN		,	// Resource not available, try again
 
+	// E1000 error -- added by student
+	E_TXQ_FULL	,	// Transmit queue is full.
+
 	MAXERROR
 };
 
