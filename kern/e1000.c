@@ -64,7 +64,7 @@ e1000_rx_init()
 	// You should allocate some pages as receive buffer
 	// The size of jos is not enough if I use the same strategy as the transmit part.
 	// I don't know why. >_<
-	int pgn = N_RXDESC * RX_PKT_SIZE / PGSIZE;             // 128
+	// int pgn = N_RXDESC * RX_PKT_SIZE / PGSIZE;             // 128
 	// int buf_per_page = PGSIZE / RX_PKT_SIZE;               // 2
 	// struct PageInfo *pgl = page_alloc_contiguous(pgn, ALLOC_ZERO);
 	// for (int i = 0; i < pgn; i++)
@@ -89,7 +89,6 @@ e1000_rx_init()
 		// cprintf("e1000_rx_init buf pos %p pp_c %d\n", rx_pkt_buf[i], pg_tmp->pp_c);
 		rx_descs[i].addr = PADDR(rx_pkt_buf[i]);
 	}
-	
 
 	// Set hardward registers
 	// Look kern/e1000.h to find useful definations

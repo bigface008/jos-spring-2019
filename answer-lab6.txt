@@ -1,0 +1,25 @@
+Lab6 Answer
+
+汪喆昊 516030910460 F1603703
+
+Question 1
+How did you structure your transmit implementation? In particular, what do you
+do if the transmit ring is full?
+
+e1000_tx()在发现队列已满之后，会返回-E_TXQ_FULL这一错误值。在output.c中的output()中
+27行附近，当sys_net_send的返回值小于0，output()检查它是否等于-E_TXQ_FULL，若是，则重
+试直至sys_net_send成功调用并返回；若不是，则panic。
+
+Question 2
+How did you structure your receive implementation? In particular, what do you do
+if the receive queue is empty and a user environment requests the next incoming
+packet?
+
+
+Question 3
+What does the web page served by JOS's web server say?
+
+
+Question 4
+How long approximately did it take you to do this lab?
+
