@@ -185,6 +185,9 @@ struct PageInfo {
 	// boot_alloc do not have valid reference count fields.
 
 	uint16_t pp_ref;
+
+	// Added by student to implement page_alloc_contiguous.
+	uint32_t pp_c;
 };
 
 #endif /* !__ASSEMBLER__ */

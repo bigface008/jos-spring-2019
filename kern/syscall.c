@@ -493,6 +493,7 @@ sys_net_send(const void *buf, uint32_t len)
 	// Check the user permission to [buf, buf + len]
 	user_mem_assert(curenv, buf, len, PTE_U);
 
+	cprintf("sys_net_send buf kerngd %x\n", kern_pgdir[PDX(buf)]);
 	// Call e1000_tx to send the packet
 	return e1000_tx(buf, len);
 	// Hint: e1000_tx only accept kernel virtual address
@@ -504,9 +505,12 @@ sys_net_recv(void *buf, uint32_t len)
 {
 	// LAB 6: Your code here.
 	// Check the user permission to [buf, buf + len]
+	user_mem_assert(curenv, buf, len, PTE_U | PTE_W);
+
 	// Call e1000_rx to fill the buffer
+	return e1000_rx(buf, len);
 	// Hint: e1000_rx only accept kernel virtual address
-	return -1;
+	// return -1;
 }
 
 // Dispatches to the correct kernel function, passing the arguments.

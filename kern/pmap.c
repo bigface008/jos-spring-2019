@@ -345,6 +345,7 @@ void page_init(void)
 			// cprintf("atention\n");
 			continue;
 		}
+		pages[i].pp_c = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
 	}
@@ -361,6 +362,7 @@ void page_init(void)
 		// 	cprintf("atention\n");
 		// 	continue;
 		// }
+		pages[i].pp_c = 1;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
 	}
@@ -392,6 +394,75 @@ page_alloc(int alloc_flags)
 	page_free_list = page_free_list->pp_link;
 	result->pp_link = NULL; // ?
 	return result;
+}
+
+struct PageInfo *
+page_alloc_contiguous(int num, int alloc_flags)
+{
+	struct PageInfo *result = NULL;
+	if (num == 1)
+	{
+		result = page_alloc(alloc_flags);
+		return result;
+	}
+
+	if (!page_free_list || num == 0)
+		return NULL;
+
+	struct PageInfo *ptr = page_free_list;
+	struct PageInfo *ptr_prev = NULL;
+	struct PageInfo *head = ptr;
+	struct PageInfo *head_prev = NULL;
+	// struct PageInfo *head_prev = page_free_list;
+	uint32_t mark = ptr->pp_c;
+	int pg_count = 1;
+	while ((ptr = ptr->pp_link))
+	{
+		if (ptr->pp_c != mark) // Not contiguous.
+		{
+			if (pg_count < num)
+			{
+				pg_count = 1;
+				mark = ptr->pp_c;
+				head = ptr;
+				head_prev = ptr_prev;
+				cprintf("kern/pmap.c:%d page_alloc_contiguous: Change contiguous part.\n", __LINE__);
+				cprintf("kern/pmap.c:%d page_alloc_contiguous: pos %x mark %d num %d.\n", __LINE__, page2kva(ptr), ptr->pp_c, pg_count);
+				continue;
+			}
+			assert(0); // You shouldn't come here.
+		}
+		else // Contiguous.
+		{
+			pg_count++;
+			cprintf("kern/pmap.c:%d page_alloc_contiguous: pos %x mark %d num %d.\n", __LINE__, page2kva(ptr), ptr->pp_c, pg_count);
+			if (pg_count == num)
+			{
+				cprintf("kern/pmap.c:%d page_alloc_contiguous: rst %x\n", __LINE__, page2kva(ptr));
+				cprintf("kern/pmap.c:%d page_alloc_contiguous: prv %x\n", __LINE__, page2kva(head_prev));
+				cprintf("kern/pmap.c:%d page_alloc_contiguous: Succeed.\n", __LINE__);
+				head_prev->pp_link = ptr->pp_link;
+				result = ptr;
+				if (alloc_flags && ALLOC_ZERO)
+				{
+					// cprintf("kern/pmap.c:%d page_alloc_contiguous: page2kva(head) %p\n", __LINE__, page2kva(head));
+					// cprintf("kern/pmap.c:%d page_alloc_contiguous: page2kva(head) + PGSIZE * num %p\n", __LINE__, page2kva(head) + PGSIZE * num);
+					memset(page2kva(ptr), 0, PGSIZE * num);
+					// for (int i = 0; i < num; i++)
+					// {
+					// 	cprintf("kern/pmap.c:%d page_alloc_contiguous: clear %d page2kva %x\n", __LINE__, i, page2kva(&ptr[i]));
+					// 	memset(page2kva(&ptr[i]), 0, PGSIZE);
+					// }
+				}
+				cprintf("kern/pmap.c:%d page_alloc_contiguous: 3.\n", __LINE__);
+				return result; // Success.
+			}
+			ptr_prev = ptr;
+		}
+	}
+
+	cprintf("kern/pmap.c:%d page_alloc_contiguous: Free pages are not enough.\n", __LINE__);
+	return NULL;
 }
 
 //

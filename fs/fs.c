@@ -11,6 +11,7 @@
 void
 check_super(void)
 {
+	// cprintf("fs/fs.c:%d super->s_magic %x\n", __LINE__, super->s_magic);
 	if (super->s_magic != FS_MAGIC)
 		panic("bad file system magic number");
 
@@ -117,6 +118,7 @@ fs_init(void)
 
 	// Set "super" to point to the super block.
 	super = diskaddr(1);
+	cprintf("super magic %x\n", super->s_magic);
 	check_super();
 
 	// Set "bitmap" to the beginning of the first bitmap block.

@@ -17,6 +17,7 @@ output(envid_t ns_envid)
 	while (1)
 	{
 		r = ipc_recv(&from_env, &nsipcbuf, &perm);
+		cprintf("output %p\n", &nsipcbuf);
 		if (r != NSREQ_OUTPUT)
 		{
 			cprintf("net/output.c:%d Not NSREQ_OUTPUT\n", __LINE__);

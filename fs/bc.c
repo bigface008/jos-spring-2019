@@ -29,6 +29,7 @@ va_is_dirty(void *va)
 static void
 bc_pgfault(struct UTrapframe *utf)
 {
+	// cprintf("> bc_pgfault\n");
 	void *addr = (void *) utf->utf_fault_va;
 	uint32_t blockno = ((uint32_t)addr - DISKMAP) / BLKSIZE;
 	int r;
@@ -59,6 +60,7 @@ bc_pgfault(struct UTrapframe *utf)
 	if ((r = sys_page_map(0, addr, 0, addr, uvpt[PGNUM(addr)] & PTE_SYSCALL)) < 0)
 		panic("in bc_pgfault, sys_page_map: %e", r);
 
+	// cprintf("bc_pgfault addr magic %x\n", *(int *)addr);
 	// Check that the block we read was allocated. (exercise for
 	// the reader: why do we do this *after* reading the block
 	// in?)
@@ -102,6 +104,7 @@ check_bc(void)
 	struct Super backup;
 
 	// back up super block
+	// cprintf("check_bc addr magic %x\n", *(int *)diskaddr(1));
 	memmove(&backup, diskaddr(1), sizeof backup);
 
 	// smash it

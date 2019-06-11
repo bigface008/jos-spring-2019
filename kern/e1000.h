@@ -84,7 +84,17 @@ int e1000_tx(const void *buf, uint32_t len);
 int e1000_rx(void *buf, uint32_t len);
 
 // Added by student.
-volatile struct E1000 *e1000_ptr;
+// volatile struct E1000 *e1000_ptr;
 #define TX_PKT_SIZE 1518
+#define RX_PKT_SIZE 2048
+
+// Not quite clear.
+#define E1000_RCTL_LPE        0x00000020
+#define E1000_RCTL_LBM_MASK   0x000000C0
+#define E1000_RCTL_RDMTS_MASK 0x00000300
+#define E1000_RCTL_MO_MASK    0x00007000
+#define E1000_RCTL_BAM        0x00008000
+#define E1000_RCTL_BSEX       0x02000000
+#define E1000_RCTL_BSIZE_MASK 0x00030000
 
 #endif  // SOL >= 6
