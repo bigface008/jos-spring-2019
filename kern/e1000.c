@@ -17,7 +17,7 @@ e1000_tx_init()
 	// Allocate one page for descriptors
 	struct PageInfo *pg = page_alloc(ALLOC_ZERO);
 	tx_descs = page2kva(pg);
-	memset(tx_descs, 0, PGSIZE);
+	// memset(tx_descs, 0, PGSIZE);
 
 	// Initialize all descriptors
 	memset(tx_pkt_buf, 0, sizeof(tx_pkt_buf));
@@ -58,7 +58,7 @@ e1000_rx_init()
 	// Not necessary.
 	struct PageInfo *pg = page_alloc(ALLOC_ZERO);
 	rx_descs = page2kva(pg);
-	memset(rx_descs, 0, PGSIZE);
+	// memset(rx_descs, 0, PGSIZE);
 
 	// Initialize all descriptors
 	// You should allocate some pages as receive buffer
