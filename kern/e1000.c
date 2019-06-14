@@ -3,7 +3,7 @@
 #include <inc/string.h>
 #include <inc/error.h>
 
-static struct E1000 *base;
+static volatile struct E1000 *base;
 
 // Modified by student.
 // struct tx_desc tx_descs[N_TXDESC] __attribute__((aligned(16))); // ?
@@ -123,7 +123,7 @@ pci_e1000_attach(struct pci_func *pcif)
 
 	// Map MMIO region and save the address in 'base;
 	base = (struct E1000 *)mmio_map_region(pcif->reg_base[0], pcif->reg_size[0]);
-	memset(base, 0, sizeof(struct E1000));
+	// memset(base, 0, sizeof(struct E1000));
 	cprintf("E1000 STATUS 0x%08x\n", base->STATUS);
 
 	e1000_tx_init();
